@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>English Sectional Mock</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+/* English Sectional Mock – 13 Minutes */
+const TOTAL_TIME = 13 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+{
+  q: "Identify the part of the sentence that contains a grammatical error.\nThe train A. left the station B. before we C. had arrived D.",
+  options: [
+    "The train",
+    "left the station",
+    "before we",
+    "had arrived"
+  ],
+  answer: 3
+},
+{
+  q: "Fill in the blank with the most appropriate idiom:\nAfter months of subtle manipulation, she finally showed her true colors and _____.",
+  options: [
+    "played her cards right",
+    "stabbed him in the back",
+    "took the bull by the horns",
+    "burned the midnight oil"
+  ],
+  answer: 1
+},
+{
+  q: "Select the most appropriate synonym of the word: Fastidious",
+  options: [
+    "Easygoing",
+    "Indulgent",
+    "Meticulous",
+    "Careless"
+  ],
+  answer: 2
+},
+{
+  q: "Fill in the blank with the most appropriate idiom:\nThe CEO resigned, citing personal reasons, but insiders knew it was just a _____.",
+  options: [
+    "can of worms",
+    "slip of the tongue",
+    "red herring",
+    "feather in the cap"
+  ],
+  answer: 2
+},
+{
+  q: "Passage (for Q5 to Q9)\nGraphic design is a compelling and ubiquitous tool of visual communication that goes well beyond superficial aesthetics. Fundamentally, it is the art of communicating a particular message, concept, or emotion to an audience through visual means. A graphic designer’s job is a strategic combination of problem-solving and creativity, where they carefully combine a mix of elements—type, color, images, and layout—to produce an engaging and lucid visual message.\nThe work of the graphic designer is out there all around us in our everyday lives. From the symbols that characterize our beloved brands and the product packaging we use, to the design of the websites we visit and the posters that line our cities, graphic design influences how we understand the world we live in. It is a fundamental marketing, advertising, publishing, and digital media discipline, whereby it is utilized for creating brand identity, improving user experience, and rendering information more accessible and enjoyable.\nTo succeed in this profession, a graphic designer must have a fine eye for detail, a good comprehension of design principles, and expertise in industry-standard tools. Most importantly, he/she is gifted with creativity and critical thinking in using visual communication to address actual issues. It is a job that exists where art and technology meet, an essential gateway between complicated concepts and people who must know.\n\nWhat is the primary purpose of graphic design according to the text?",
+  options: [
+    "To create aesthetically pleasing visuals",
+    "To communicate a specific message or concept through visuals",
+    "To make designs look modern",
+    "To follow industry trends"
+  ],
+  answer: 1
+},
+{
+  q: "Which of the following elements are combined by graphic designers to create visual messages?",
+  options: [
+    "Typography, color, images, and layout",
+    "Typography, music, videos, and text",
+    "Color, design software, videos, and typography",
+    "Photography, videos, music, and text"
+  ],
+  answer: 0
+},
+{
+  q: "How is graphic design utilized in our everyday lives?",
+  options: [
+    "To entertain audiences and promote entertainment services",
+    "To create visual appeal without any specific function",
+    "To influence understanding, marketing, and branding",
+    "To only improve the aesthetic quality of spaces"
+  ],
+  answer: 2
+},
+{
+  q: "What skills are essential for success in graphic design?",
+  options: [
+    "Ability to write compelling texts and manage teams",
+    "Strong knowledge of web coding and photography",
+    "Fine eye for detail, understanding of design principles, and tool expertise",
+    "Expertise in advanced software coding"
+  ],
+  answer: 2
+},
+{
+  q: "What does the job of a graphic designer fundamentally involve?",
+  options: [
+    "Creating new art for personal expression",
+    "Organizing visuals for minimalistic designs",
+    "Combining creativity with visual communication to solve real-world problems",
+    "Following strict design rules without deviation"
+  ],
+  answer: 2
+},
+{
+  q: "Which of the following sentences uses the word “rose” with the same meaning as in the sentence:\n“He gave her a single red rose on their anniversary”?",
+  options: [
+    "The water level rose quickly after the heavy rain.",
+    "The smell of the freshly cut rose filled the room.",
+    "Prices for gasoline rose sharply over the weekend.",
+    "The sun rose just as we were finishing our hike."
+  ],
+  answer: 1
+},
+{
+  q: "Choose the correctly spelt word:",
+  options: [
+    "Delusion",
+    "Dilusion",
+    "Delussion",
+    "Delusian"
+  ],
+  answer: 0
+},
+{
+  q: "Choose the correctly spelt word:",
+  options: [
+    "Milenium",
+    "Millennium",
+    "Millenniam",
+    "Millenium"
+  ],
+  answer: 1
+},
+{
+  q: "Choose the correct meaning of the idiom: Waxed and waned",
+  options: [
+    "Increased and decreased",
+    "Grown steadily",
+    "Expanded and contracted rapidly",
+    "Became fixed and stable"
+  ],
+  answer: 0
+},
+{
+  q: "Choose the correct one-word substitute for:\nThe art of beautiful handwriting",
+  options: [
+    "Calligraphy",
+    "Orthography",
+    "Lexicography",
+    "Etymology"
+  ],
+  answer: 0
+},
+{
+  q: "Select the most appropriate antonym of the word: Upright",
+  options: [
+    "Corrupt",
+    "Honest",
+    "Ethical",
+    "Noble"
+  ],
+  answer: 0
+},
+{
+  q: "Choose the correct one-word substitute for:\nA sudden and violent event causing great destruction",
+  options: [
+    "Cataclysm",
+    "Earthquake",
+    "Tsunami",
+    "Outbreak"
+  ],
+  answer: 0
+},
+{
+  q: "Select the most appropriate antonym of the word: Gregarious",
+  options: [
+    "Sociable",
+    "Solitary",
+    "Friendly",
+    "Outgoing"
+  ],
+  answer: 1
+},
+{
+  q: "Change the following sentence into the Active form:\nWhy had the highly sensitive company report been rejected by the board of directors?",
+  options: [
+    "Why had the board of directors rejected the highly sensitive company report?",
+    "Why the board of directors had rejected the highly sensitive company report?",
+    "The board of directors had rejected the highly sensitive company report, why?",
+    "Why did the board of directors reject the highly sensitive company report?"
+  ],
+  answer: 3
+},
+{
+  q: "Select the option that expresses the given sentence in indirect voice.\nDirect sentence:\nThe captain said, “We have been sailing in these choppy waters for two days, and we expect that the storm, which is now on the horizon, will hit us in a few hours.”",
+  options: [
+    "The captain said that they have been sailing in these choppy waters for two days, and they expect that the storm, which is now on the horizon, will hit them in a few hours.",
+    "The captain said that they had been sailing in these choppy waters for two days, and they expected that the storm, which was then on the horizon, would hit them in a few hours.",
+    "The captain said that they had been sailing in these choppy waters for two days, and they expected that the storm, which was then on the horizon, will hit them in a few hours.",
+    "The captain said that they have been sailing in these choppy waters for two days, and they expected that the storm, which is now on the horizon, will hit them in a few hours."
+  ],
+  answer: 1
+},
+{
+  q: "Choose the most suitable option to replace the highlighted part of the sentence:\nThe girl walked the dog, in a green dress.",
+  options: [
+    "walk the dog, in a green dress",
+    "walking the dog, in a green dress",
+    "in a green dress, walked the dog",
+    "in a green dress, walking the dog"
+  ],
+  answer: 2
+},
+{
+  q: "Choose the most suitable option to replace the highlighted part of the sentence:\nThe next stage for the banking sector has been set up, with proposed relaxation of normal for foreign direct investment.",
+  options: [
+    "To norms",
+    "In normal",
+    "Of norms",
+    "By normal"
+  ],
+  answer: 2
+},
+{
+  q: "Choose the correct passive voice transformation of the sentence:\nThe chef had prepared the special dish.",
+  options: [
+    "The special dish was prepared by the chef.",
+    "The special dish had been prepared by the chef.",
+    "The special dish has been prepared by the chef.",
+    "The special dish is being prepared by the chef."
+  ],
+  answer: 1
+},
+{
+  q: "Select the option that expresses the given sentence in direct voice:\nThe scientist announced that the new compound would react violently if it came into contact with water, and that they had been observing its properties for months.",
+  options: [
+    "The scientist announced, “The new compound will react violently if it comes into contact with water, and we have been observing its properties for months.”",
+    "The scientist announced… would react violently…",
+    "The scientist announced… would react violently… were observing…",
+    "The scientist announced… will react violently… had been observing…"
+  ],
+  answer: 0
+},
+{
+  q: "Rearrange the following sentence parts to form a meaningful and grammatically correct paragraph:\nP. She selected the perfect candidate for each character by casting the actors.\nQ. She helped them discover their voices and goals while guiding them through the rehearsal process.\nR. She collaborated with the set and lighting designers to achieve the ideal ambiance.\nS. She witnessed her actors realise her vision in front of an audience on opening night.",
+  options: [
+    "Q, S, R, P",
+    "R, Q, P, S",
+    "P, Q, R, S",
+    "S, Q, R, P"
+  ],
+  answer: 2
+},
+{
+  q: "Rearrange the following sentence parts to form a meaningful and grammatically correct paragraph:\nP. It soon became a very important tool for long-distance information communication.\nQ. The invention of the telegraph was one of the most remarkable technological advances of the 19th century.\nR. In linking cities and even continents with its cable and signal networks, it transformed the rhythm of life.\nS. This rate of communication had a revolutionary effect on the conduct of politics, business, and warfare.",
+  options: [
+    "Q, P, R, S",
+    "S, P, R, Q",
+    "P, Q, R, S",
+    "R, P, Q, S"
+  ],
+  answer: 0
+}
+];
+// State    
+let currentIndex = 0;    
+let answers = new Array(QUESTIONS.length).fill(null);     
+let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+let timeLeft = TOTAL_TIME;    
+let timerId = null;    
+let submitted = false;    
+let isPaused = false;    
+let reviewMode = false; // true when user is viewing a single question from analysis    
+const app = document.getElementById("app");    
+
+function formatTime(sec){ 
+  const m = Math.floor(sec/60), s = sec%60; 
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; 
+}    
+
+function getStats(){    
+  const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+  QUESTIONS.forEach((q,i)=>{    
+    const a = answers[i];    
+    if (a !== null){    
+      s.attempted++;    
+      if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+      else { s.wrong++; s.marks += MARKS_WRONG; }    
+    }    
+  });    
+  return s;    
+}    
+
+function renderQuestion(){    
+  if (reviewMode) isPaused = true;    
+  if (submitted && !reviewMode){ renderResult(); return; }    
+
+  const q = QUESTIONS[currentIndex];    
+  const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+  const selected = answers[currentIndex];    
+
+  const stripHtml = QUESTIONS.map((_,idx)=>{    
+    let cls = "qchip";    
+    if (idx===currentIndex) cls += " current";    
+    if (answers[idx] !== null) cls += " answered";    
+    if (reviewed[idx]) cls += " reviewed";    
+    return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+  }).join("");    
+
+  app.innerHTML = `    
+    <div class="header">    
+      <div class="title">English Sectional Mock</div>    
+      <div class="timer-wrap">    
+        <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+        <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+      </div>    
+    </div>    
+
+    <div class="subheader">    
+      <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+      <span class="badge">English</span>    
+    </div>    
+
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width:${progressPercent}%"></div>
+    </div>    
+
+    <div class="q-strip">
+      <div class="q-strip-inner">${stripHtml}</div>
+    </div>    
+
+    <div class="section-tag">English</div>    
+
+    <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+
+    <div class="options">    
+      ${q.options.map((opt,idx)=>{    
+        let classes = "";    
+        if (selected === idx && !reviewMode) classes = "selected";    
+        if (reviewMode){    
+          if (idx === q.answer) classes = "correct";    
+          else if (selected === idx && selected !== q.answer) classes = "wrong";    
+        } else {    
+          if (selected === idx) classes = "selected";    
+        }    
+        return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+      }).join("")}    
+    </div>    
+
+    <div class="footer">    
+      <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+      <div class="nav-buttons">    
+        <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+        ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+        <button class="nav-btn" id="markBtn">Mark</button>    
+        <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+      </div>    
+    </div>    
+  `;    
+
+  document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+    if (reviewMode){ isPaused = true; renderQuestion(); return; }    
+    isPaused = !isPaused;    
+    renderQuestion();    
+  });    
+
+  document.querySelectorAll(".qchip").forEach(b=>{    
+    b.addEventListener("click", ()=>{ 
+      currentIndex = Number(b.dataset.q); 
+      reviewMode = false; 
+      renderQuestion(); 
+    });    
+  });    
+
+  document.querySelectorAll(".option-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.index);    
+      if (reviewMode) return;    
+      answers[currentIndex] = idx;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{    
+    if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+  });    
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{    
+    if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+    else { submitted = true; reviewMode = false; renderResult(); }    
+  });    
+
+  const markBtnEl = document.getElementById('markBtn');    
+  if (markBtnEl){    
+    markBtnEl.addEventListener('click', ()=>{    
+      reviewed[currentIndex] = !reviewed[currentIndex];    
+      markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+      renderQuestion();    
+    });    
+  }    
+
+  const back = document.getElementById("backAnalysis");    
+  if (back){    
+    back.addEventListener("click", ()=>{    
+      reviewMode = false;    
+      submitted = true;    
+      renderResult();    
+    });    
+  }    
+}    
+
+function renderResult(){    
+  if (timerId){ clearInterval(timerId); timerId = null; }    
+  const s = getStats();    
+  const maxMarks = s.total * MARKS_CORRECT;    
+  const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+  let remark = percentage>=80 ? "Excellent! 💯"
+             : percentage>=60 ? "Good! 👍"
+             : percentage>=40 ? "Average. Can improve 🙂"
+             : "Needs more practice 💪";    
+
+  let qaHtml = "";    
+  QUESTIONS.forEach((q,i)=>{    
+    const user = answers[i];    
+    const correctIdx = q.answer;    
+    const isSkipped = user === null;    
+    const isCorrect = !isSkipped && user === correctIdx;    
+    const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` 
+               : isCorrect ? `<span class="pill-green">Correct</span>` 
+               : `<span class="pill-red">Wrong</span>`;    
+
+    const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+    const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+
+    qaHtml += `    
+      <div class="qa-card" id="qa-${i}">    
+        <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+        <div class="qa-answer-row">    
+          <div><span class="label">Your answer:</span> ${userText}</div>    
+          <div><span class="label">Correct answer:</span> ${correctText}</div>    
+          <div style="margin-left:auto">${pill}</div>    
+        </div>    
+        <div style="margin-top:8px;text-align:right">    
+          <button class="review-btn" data-q="${i}">Review Q</button>    
+        </div>    
+      </div>    
+    `;    
+  });    
+
+  app.innerHTML = `    
+    <div class="result">    
+      <h2>English Section Analysis</h2>    
+      <div class="tiny">9-minute sectional mock completed</div>    
+
+      <div class="card">    
+        <div class="card-title">Overall Performance</div>    
+        <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+        <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+        <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+        <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+        <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+        <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+        <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+      </div>    
+
+      <div style="margin-top:8px;margin-bottom:8px">    
+        <div class="card-title">Question-wise Review</div>    
+        ${qaHtml}    
+      </div>    
+
+      <button class="restart-btn" id="restartBtn">Retake Section</button>    
+      <div class="tiny">Timer will restart from 9 minutes</div>    
+    </div>    
+  `;    
+
+  document.querySelectorAll(".review-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.q);    
+      currentIndex = idx;    
+      reviewMode = true;    
+      submitted = false;    
+      isPaused = true;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("restartBtn").addEventListener("click", ()=>{    
+    currentIndex = 0;    
+    answers = new Array(QUESTIONS.length).fill(null);    
+    timeLeft = TOTAL_TIME;    
+    submitted = false;    
+    isPaused = false;    
+    reviewMode = false;    
+    startTimer();    
+    renderQuestion();    
+  });    
+}    
+
+function startTimer(){    
+  if (timerId) clearInterval(timerId);    
+  timerId = setInterval(()=>{    
+    if (!isPaused && !submitted && !reviewMode){    
+      timeLeft--;    
+      if (timeLeft <= 0){    
+        submitted = true;    
+        reviewMode = false;    
+        renderResult();    
+        return;    
+      }    
+    }    
+    const el = document.querySelector(".timer");    
+    if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+  }, 1000);    
+}    
+
+startTimer();    
+renderQuestion();
+</script>  </body>    </html>

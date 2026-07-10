@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>English Sectional Mock</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+/* English Sectional Mock – 13 Minutes */
+const TOTAL_TIME = 13 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+{
+  q: "Identify the part of the sentence that contains a grammatical error.\nThe company’s latest report, which was released only this morning, provided the data that supports our initial hypothesis.",
+  options: [
+    "The company’s latest report",
+    "which was released only this morning",
+    "provided the data that",
+    "supports our initial hypothesis"
+  ],
+  answer: 1
+},
+{
+  q: "Identify the part of the sentence that contains a grammatical error.\nThe reason for his failure is because he didn’t study for the exam.",
+  options: [
+    "The reason for his failure",
+    "is because he",
+    "didn’t study",
+    "for the exam"
+  ],
+  answer: 1
+},
+{
+  q: "Select the most appropriate synonym of the word: Surrender",
+  options: [
+    "Resist",
+    "Yield",
+    "Confront",
+    "Oppose"
+  ],
+  answer: 1
+},
+{
+  q: "Fill in the blank with the most appropriate phrasal verb.\nThe investigation team will ___ every detail before concluding the report.",
+  options: [
+    "look over",
+    "go through",
+    "call off",
+    "fall back"
+  ],
+  answer: 1
+},
+{
+  q: "Select the most appropriate synonym of the word: Diffident",
+  options: [
+    "Confident",
+    "Bold",
+    "Timid",
+    "Assertive"
+  ],
+  answer: 2
+},
+{
+  q: "Choose the correctly spelt word.",
+  options: [
+    "Enthusiasm",
+    "Enthusiazm",
+    "Enthuseam",
+    "Enthusiasum"
+  ],
+  answer: 0
+},
+{
+  q: "Which of the following sentences uses the word “bat” with the same meaning as in the sentence below?\n“He took a swing with his new wooden bat.”",
+  options: [
+    "The bat is the only flying mammal.",
+    "The coach handed him the bat before he went up to the plate.",
+    "A furry little bat got into the attic last night.",
+    "The bat’s wingspan was surprisingly large."
+  ],
+  answer: 1
+},
+{
+  q: "Passage for Q8–Q12\nThe mounting reality of climate migration represents a deep and vexing challenge to confront the ethical and planning paradigms of global society. As melting polar ice, desertification, and violent weather patterns make large areas uninhabitable, millions are already being forced off their land, creating a new generation of forced migrants who now have no official legal status as “climate refugees.” The issue now is no longer whether this will occur, but how countries ought to act together and fairly.\nA thorough solution calls for a multi-faceted strategy: first, the creation of new international humanitarian and legal protocols to acknowledge and safeguard climate migrants and shift away from the present, limited definition of refugees. Second, it requires proactive, not reactive, policy, such as the establishment of legal and safe channels of resettlement, strong humanitarian assistance for uprooted persons, and serious investment in building climate resilience among those who are likely to be vulnerable.\nIt puts in sharp relief the hard question of how the burden is to be shared. A strong case, based on the issue of climate justice, places the main burden on the industrialised world. Having been the biggest per-capita producers of greenhouse gases throughout history, their prosperity was primarily developed through carbon-polluting industries, while the least-developed countries contributed minimal input to the crisis. Hence, an ethical and equitable response requires that these industrialised countries take the lead with both financial and logistical assistance.\nAccording to the passage, what is the primary ethical dilemma posed by climate migration?",
+  options: [
+    "Whether migrants should be allowed to resettle",
+    "How the burden of climate migration should be shared",
+    "Whether climate change is a natural occurrence",
+    "How to prevent future climate change"
+  ],
+  answer: 1
+},
+{
+  q: "In the passage, the word “vexing” most nearly means:",
+  options: [
+    "Annoying",
+    "Uncertain",
+    "Irritating",
+    "Complex"
+  ],
+  answer: 3
+},
+{
+  q: "What is meant by “climate justice” as described in the passage?",
+  options: [
+    "Fair distribution of global resources",
+    "Accountability of industrialised nations for climate damage",
+    "Equity in migration policies",
+    "Global cooperation to reverse climate change"
+  ],
+  answer: 1
+},
+{
+  q: "How does the passage characterize the current definition of “refugees” in the context of climate migration?",
+  options: [
+    "It is too broad to include climate migrants",
+    "It is narrow and insufficient to cover climate migrants",
+    "It is accurate and universally accepted",
+    "It is too rigid to address global migration"
+  ],
+  answer: 1
+},
+{
+  q: "What strategy is suggested in the passage to address climate migration?",
+  options: [
+    "Reactive measures to control migration",
+    "Proactive measures to prevent displacement",
+    "Total ban on climate migration",
+    "International immigration restrictions"
+  ],
+  answer: 1
+},
+{
+  q: "Choose the correct meaning of the idiom: Fallen off the radar",
+  options: [
+    "Gained attention",
+    "Become unnoticed",
+    "Avoided detection",
+    "Gained popularity"
+  ],
+  answer: 1
+},
+{
+  q: "Choose the correct meaning of the idiom: Dicing with death",
+  options: [
+    "Taking extreme risks",
+    "Playing a dangerous game",
+    "Having a narrow escape",
+    "Being in complete control"
+  ],
+  answer: 0
+},
+{
+  q: "Which of the following sentences uses the word “board” with a different meaning from the others?",
+  options: [
+    "The board of directors met yesterday.",
+    "The captain had to board the ship.",
+    "He nailed a picture of the board of directors on the wall.",
+    "The board of directors decided to hire a new CEO."
+  ],
+  answer: 1
+},
+{
+  q: "Choose the correct one-word substitute for:\nA person who loves collecting books",
+  options: [
+    "Bookworm",
+    "Librarian",
+    "Bibliophile",
+    "Reader"
+  ],
+  answer: 2
+},
+{
+  q: "Select the most appropriate antonym of the word: Innocuous",
+  options: [
+    "Harmless",
+    "Benign",
+    "Harmful",
+    "Safe"
+  ],
+  answer: 2
+},
+{
+  q: "Select the most appropriate antonym of the word: Esoteric",
+  options: [
+    "Arcane",
+    "Common",
+    "Mystical",
+    "Obscure"
+  ],
+  answer: 1
+},
+{
+  q: "Change the following sentence into the Active form.\nThe report could not be accessed without the proper security clearance.",
+  options: [
+    "They could not access the report without the proper security clearance.",
+    "The report cannot be accessed without the proper security clearance.",
+    "Without the proper security clearance, the report was not accessed.",
+    "The proper security clearance could not access the report."
+  ],
+  answer: 0
+},
+{
+  q: "Select the option that expresses the given sentence in indirect voice.\nThe director said, “The new actor will be arriving shortly.”",
+  options: [
+    "The director said that the new actor would be arriving shortly.",
+    "The director said that the new actor will be arriving shortly.",
+    "The director said that the new actor would arrive shortly.",
+    "The director said that the new actor had been arriving shortly."
+  ],
+  answer: 0
+},
+{
+  q: "Choose the most suitable option to replace the highlighted part of the sentence.\nEach of the girls narrated their story.",
+  options: [
+    "Each of the girls narrated there story",
+    "Each of the girls narrated his story",
+    "Each of the girls narrated her story",
+    "Each of the girls narrated their stories"
+  ],
+  answer: 2
+},
+{
+  q: "Choose the correct passive voice transformation of the sentence.\nMy brother built this house in 2005.",
+  options: [
+    "This house was built by my brother in 2005.",
+    "This house is built by my brother in 2005.",
+    "This house is being built by my brother in 2005.",
+    "This house was being built by my brother in 2005."
+  ],
+  answer: 0
+},
+{
+  q: "Select the option that expresses the given sentence in direct voice.\nThe professor explained that although the theory had been considered correct for centuries, new findings now proved that it was flawed.",
+  options: [
+    "The professor explained, “Although the theory had been considered correct for centuries, new findings now prove that it is flawed.”",
+    "The professor explained, “Although the theory was considered correct for centuries, new findings now prove that it is flawed.”",
+    "The professor explained, “Although the theory has been considered correct for centuries, new findings now prove that it is flawed.”",
+    "The professor explained, “Although the theory was considered correct for centuries, new findings then proved that it was flawed.”"
+  ],
+  answer: 2
+},
+{
+  q: "Rearrange the following sentence parts to form a meaningful and grammatically correct paragraph.\nP. The old man, with his kind eyes and twisted hands, smiled softly.\nQ. He had lived a whole life as a woodcarver, and his stone was a museum of fragile works of art.\nR. He held a tiny bird he was carving, his thumb caressing the slippery wood.\nS. They all had a story, a memory, a piece of his soul.",
+  options: [
+    "PQRS",
+    "QPRS",
+    "QSRP",
+    "SQPR"
+  ],
+  answer: 1
+},
+{
+  q: "Rearrange the following sentences to form a meaningful and grammatically correct paragraph.\nP. She examined the old manuscript closely, observing the fading ink.\nQ. After that, she turned the fragile pages carefully so as not to break them anymore.\nR. With a long history filled with tales, the book has been handed down through the centuries.\nS. Before starting the restoration procedure, she got the equipment and supplies she would need ready.",
+  options: [
+    "P, S, Q, R",
+    "S, R, P, Q",
+    "Q, S, P, R",
+    "R, S, P, Q"
+  ],
+  answer: 3
+}
+];
+// State    
+let currentIndex = 0;    
+let answers = new Array(QUESTIONS.length).fill(null);     
+let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+let timeLeft = TOTAL_TIME;    
+let timerId = null;    
+let submitted = false;    
+let isPaused = false;    
+let reviewMode = false; // true when user is viewing a single question from analysis    
+const app = document.getElementById("app");    
+
+function formatTime(sec){ 
+  const m = Math.floor(sec/60), s = sec%60; 
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; 
+}    
+
+function getStats(){    
+  const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+  QUESTIONS.forEach((q,i)=>{    
+    const a = answers[i];    
+    if (a !== null){    
+      s.attempted++;    
+      if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+      else { s.wrong++; s.marks += MARKS_WRONG; }    
+    }    
+  });    
+  return s;    
+}    
+
+function renderQuestion(){    
+  if (reviewMode) isPaused = true;    
+  if (submitted && !reviewMode){ renderResult(); return; }    
+
+  const q = QUESTIONS[currentIndex];    
+  const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+  const selected = answers[currentIndex];    
+
+  const stripHtml = QUESTIONS.map((_,idx)=>{    
+    let cls = "qchip";    
+    if (idx===currentIndex) cls += " current";    
+    if (answers[idx] !== null) cls += " answered";    
+    if (reviewed[idx]) cls += " reviewed";    
+    return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+  }).join("");    
+
+  app.innerHTML = `    
+    <div class="header">    
+      <div class="title">English Sectional Mock</div>    
+      <div class="timer-wrap">    
+        <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+        <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+      </div>    
+    </div>    
+
+    <div class="subheader">    
+      <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+      <span class="badge">English</span>    
+    </div>    
+
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width:${progressPercent}%"></div>
+    </div>    
+
+    <div class="q-strip">
+      <div class="q-strip-inner">${stripHtml}</div>
+    </div>    
+
+    <div class="section-tag">English</div>    
+
+    <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+
+    <div class="options">    
+      ${q.options.map((opt,idx)=>{    
+        let classes = "";    
+        if (selected === idx && !reviewMode) classes = "selected";    
+        if (reviewMode){    
+          if (idx === q.answer) classes = "correct";    
+          else if (selected === idx && selected !== q.answer) classes = "wrong";    
+        } else {    
+          if (selected === idx) classes = "selected";    
+        }    
+        return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+      }).join("")}    
+    </div>    
+
+    <div class="footer">    
+      <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+      <div class="nav-buttons">    
+        <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+        ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+        <button class="nav-btn" id="markBtn">Mark</button>    
+        <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+      </div>    
+    </div>    
+  `;    
+
+  document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+    if (reviewMode){ isPaused = true; renderQuestion(); return; }    
+    isPaused = !isPaused;    
+    renderQuestion();    
+  });    
+
+  document.querySelectorAll(".qchip").forEach(b=>{    
+    b.addEventListener("click", ()=>{ 
+      currentIndex = Number(b.dataset.q); 
+      reviewMode = false; 
+      renderQuestion(); 
+    });    
+  });    
+
+  document.querySelectorAll(".option-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.index);    
+      if (reviewMode) return;    
+      answers[currentIndex] = idx;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{    
+    if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+  });    
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{    
+    if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+    else { submitted = true; reviewMode = false; renderResult(); }    
+  });    
+
+  const markBtnEl = document.getElementById('markBtn');    
+  if (markBtnEl){    
+    markBtnEl.addEventListener('click', ()=>{    
+      reviewed[currentIndex] = !reviewed[currentIndex];    
+      markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+      renderQuestion();    
+    });    
+  }    
+
+  const back = document.getElementById("backAnalysis");    
+  if (back){    
+    back.addEventListener("click", ()=>{    
+      reviewMode = false;    
+      submitted = true;    
+      renderResult();    
+    });    
+  }    
+}    
+
+function renderResult(){    
+  if (timerId){ clearInterval(timerId); timerId = null; }    
+  const s = getStats();    
+  const maxMarks = s.total * MARKS_CORRECT;    
+  const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+  let remark = percentage>=80 ? "Excellent! 💯"
+             : percentage>=60 ? "Good! 👍"
+             : percentage>=40 ? "Average. Can improve 🙂"
+             : "Needs more practice 💪";    
+
+  let qaHtml = "";    
+  QUESTIONS.forEach((q,i)=>{    
+    const user = answers[i];    
+    const correctIdx = q.answer;    
+    const isSkipped = user === null;    
+    const isCorrect = !isSkipped && user === correctIdx;    
+    const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` 
+               : isCorrect ? `<span class="pill-green">Correct</span>` 
+               : `<span class="pill-red">Wrong</span>`;    
+
+    const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+    const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+
+    qaHtml += `    
+      <div class="qa-card" id="qa-${i}">    
+        <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+        <div class="qa-answer-row">    
+          <div><span class="label">Your answer:</span> ${userText}</div>    
+          <div><span class="label">Correct answer:</span> ${correctText}</div>    
+          <div style="margin-left:auto">${pill}</div>    
+        </div>    
+        <div style="margin-top:8px;text-align:right">    
+          <button class="review-btn" data-q="${i}">Review Q</button>    
+        </div>    
+      </div>    
+    `;    
+  });    
+
+  app.innerHTML = `    
+    <div class="result">    
+      <h2>English Section Analysis</h2>    
+      <div class="tiny">9-minute sectional mock completed</div>    
+
+      <div class="card">    
+        <div class="card-title">Overall Performance</div>    
+        <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+        <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+        <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+        <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+        <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+        <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+        <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+      </div>    
+
+      <div style="margin-top:8px;margin-bottom:8px">    
+        <div class="card-title">Question-wise Review</div>    
+        ${qaHtml}    
+      </div>    
+
+      <button class="restart-btn" id="restartBtn">Retake Section</button>    
+      <div class="tiny">Timer will restart from 9 minutes</div>    
+    </div>    
+  `;    
+
+  document.querySelectorAll(".review-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.q);    
+      currentIndex = idx;    
+      reviewMode = true;    
+      submitted = false;    
+      isPaused = true;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("restartBtn").addEventListener("click", ()=>{    
+    currentIndex = 0;    
+    answers = new Array(QUESTIONS.length).fill(null);    
+    timeLeft = TOTAL_TIME;    
+    submitted = false;    
+    isPaused = false;    
+    reviewMode = false;    
+    startTimer();    
+    renderQuestion();    
+  });    
+}    
+
+function startTimer(){    
+  if (timerId) clearInterval(timerId);    
+  timerId = setInterval(()=>{    
+    if (!isPaused && !submitted && !reviewMode){    
+      timeLeft--;    
+      if (timeLeft <= 0){    
+        submitted = true;    
+        reviewMode = false;    
+        renderResult();    
+        return;    
+      }    
+    }    
+    const el = document.querySelector(".timer");    
+    if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+  }, 1000);    
+}    
+
+startTimer();    
+renderQuestion();
+</script>  </body>    </html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHSL Maths Sectional Mock (25Q)</title>
+
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:14px}
+.container{max-width:520px;width:100%;background:#fff;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08);padding:18px}
+
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.title{font-size:17px;font-weight:600}
+.timer{background:#111827;color:#fff;padding:5px 12px;border-radius:999px;font-size:13px}
+
+.sub{font-size:12px;color:#6b7280;margin-bottom:8px;display:flex;justify-content:space-between}
+.badge{background:#e5e7eb;border-radius:999px;padding:2px 8px}
+
+.q-strip{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.q-strip::-webkit-scrollbar{display:none}
+.qchip{min-width:26px;height:26px;border-radius:50%;border:1px solid #d1d5db;font-size:11px;background:#f9fafb}
+.qchip.current{background:#111827;color:#fff}
+.qchip.answered{background:#dbeafe;color:#1d4ed8}
+.qchip.reviewed{background:rebeccapurple;color:#fff}
+
+.question{font-size:15px;margin-bottom:10px;white-space:pre-line}
+.options{display:grid;gap:8px}
+.option{border:1px solid #d1d5db;border-radius:999px;padding:9px 14px;text-align:left;font-size:14px;background:#fff}
+.option.selected{background:#2563eb;color:#fff}
+.option.correct{background:#dcfce7;color:#166534}
+.option.wrong{background:#fee2e2;color:#b91c1c}
+
+.footer{margin-top:14px;display:flex;gap:6px}
+.btn{border:none;border-radius:999px;padding:9px 12px;font-size:13px}
+.btn.gray{background:#e5e7eb}
+.btn.dark{background:#111827;color:#fff;flex:1}
+.back-btn{background:#6b7280;color:#fff}
+
+.result h2{text-align:center}
+.card{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:8px}
+.qa{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:6px}
+.pill{border-radius:999px;padding:3px 8px;font-size:12px}
+.green{background:#dcfce7}
+.red{background:#fee2e2}
+.gray{background:#e5e7eb}
+
+.review-btn{margin-left:auto;background:#111827;color:#fff;border:none;border-radius:999px;padding:5px 10px;font-size:12px}
+.restart{width:100%;margin-top:10px;padding:10px;border:none;border-radius:999px;background:#2563eb;color:#fff}
+</style>
+</head>
+
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const TOTAL_TIME = 25*60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+
+/* ===== EXACT QUESTIONS (WORD FOR WORD) ===== */
+const QUESTIONS = [
+{
+q:`Which one of the following statements is FALSE?
+
+A. Every integer is a real number
+B. Every natural number is an integer
+C. Every irrational number is rational
+D. Rational and irrational numbers are real numbers`,
+options:["A","B","C","D"],
+answer:2
+},
+{
+q:`The decimal expansion of a rational number is:`,
+options:[
+"Non-terminating and non-repeating",
+"Terminating or repeating",
+"Terminating only",
+"Repeating only"
+],
+answer:1
+},
+{
+q:`A dealer bought two antique items. On the first item, he gained 25%, and on the second, he lost 10%. The cost price of the first item was 60% more than the second. If the overall profit from both items was ₹225, find the cost price of each item.`,
+options:[
+"₹1,250 and ₹800",
+"₹1,200 and ₹750",
+"₹1,100 and ₹700",
+"₹1,300 and ₹850"
+],
+answer:1
+},
+{
+q:`A dealer buys a batch of 25 pressure cookers at ₹800 each. He sells 15 of them at 20% profit and the remaining at 10% loss. Find the overall profit or loss percentage.`,
+options:[
+"6% Profit",
+"8% Profit",
+"10% Profit",
+"12% Loss"
+],
+answer:1
+},
+{
+q:`12 books, each of ₹360, are sold at ₹3600. What is the percentage of discount given?`,
+options:[
+"16.67%",
+"18%",
+"15.5%",
+"14.57%"
+],
+answer:0
+},
+{
+q:`A vintage clock was bought for ₹10000. Its price was marked up by 40%. Thereafter, it was sold at a discount of 10% on the marked price. What was the percentage profit on the transaction?`,
+options:["18%","22%","26%","20%"],
+answer:2
+},
+{
+q:`A teacher calculated the average marks of 15 students in a test as 72.4. Later, she found that the marks of one student were wrongly entered as 68.9 instead of 86.3. After correcting the error, what is the correct average mark of the class?`,
+options:["73.25","72.98","73.56","73.00"],
+answer:2
+},
+{
+q:`A student scored 20% more marks in Math than in Science. If the average of his marks in both subjects is 66, what are his marks in Science?`,
+options:["62","66","58","60"],
+answer:3
+},
+{
+q:`A school conducted a scholarship test where 60% of the students passed in English, 70% passed in Math, and 45% passed in both. What is the percentage of students who passed in at least one subject?`,
+options:["90%","75%","85%","80%"],
+answer:2
+},
+{
+q:`A and B invest ₹30,000 and ₹50,000 respectively. After 6 months, C joins with ₹60,000. What will be the ratio of their profits at the end of the year?`,
+options:[
+"5 : 3 : 2",
+"6 : 5 : 4",
+"2 : 4 : 5",
+"3 : 5 : 3"
+],
+answer:3
+},
+{
+q:`A, B and C invest ₹20,000, ₹30,000 and ₹50,000 respectively, in a business. The profit at the end of the year is ₹50,000. What is B’s share of the profit?`,
+options:["₹15,000","₹16,000","₹17,000","₹18,000"],
+answer:0
+},
+{
+q:`The total surface area of a cylinder is equal to its volume. Find the relation between radius and height.`,
+options:[
+"h = r/r-2",
+"h = 2r/r-3",
+"h = 3r/r-2",
+"h = 4r/r-3"
+],
+answer:1
+},
+{
+q:`A circle is inscribed within a square with a side length of 18 cm. Find the area of the part of the square not covered by the circle.`,
+options:[
+"64.12 cm²",
+"69.53 cm²",
+"74.28 cm²",
+"80.00 cm²"
+],
+answer:1
+},
+{
+q:`If a² + b² + c² = 240 and ab − bc − ca = 64, then find the value of (a + b − c)².`,
+options:["368","321","340","388"],
+answer:0
+},
+{
+q:`A cone and a hemisphere have equal curved surface areas and radius r. Find the slant height of the cone.`,
+options:[
+"l = 3r",
+"l = 4r",
+"l = 2r",
+"l = 5r"
+],
+answer:2
+},
+{
+q:`If 4cosA + 3secA = 4√3, where 0° < A < 90°, then the value of A is:`,
+options:["45°","25°","30°","60°"],
+answer:2
+},
+{
+q:`If 2sin²A + 2√2 cosA − 3 = 0, then find the value of tanA.`,
+options:["1","√2","1/√2","0"],
+answer:0
+},
+{
+q:`A man and a boy received ₹600 as wages for 5 days for the work they did together. The man’s efficiency was twice that of the boy. What are the daily wages of the boy?`,
+options:["₹45","₹25","₹50","₹40"],
+answer:3
+},
+{
+q:`If a solid sphere is cut into two equal hemispheres, by what percentage is the total surface area increased?`,
+options:["33.33%","50%","66.66%","100%"],
+answer:1
+},
+{
+q:`A rectangular parallelepiped has its base diagonal equal to 17 cm and height 15 cm. If the area of its base is 120 cm², find the total surface area.`,
+options:[
+"860 cm²",
+"930 cm²",
+"720 cm²",
+"890 cm²"
+],
+answer:1
+},
+{
+q:`If x = √2 + √3, find x³ − 3x.`,
+options:[
+"2√2 + 3√3",
+"8√2 − 6√3",
+"8√2 + 6√3",
+"2√2 − 3√3"
+],
+answer:2
+},
+{
+q:`A regular right pyramid has a square base with side length 16 cm and a height of 30 cm. Calculate the slant height and total surface area (in approx).`,
+options:[
+"31.05 cm, 1249.6 cm²",
+"24.45 cm, 1180.8 cm²",
+"28.12 cm, 1230.2 cm²",
+"30.12 cm, 1530.2 cm²"
+],
+answer:0
+},
+{
+q:`A regular right pyramid with an equilateral triangular base of side 18 cm is completely submerged in a cylindrical tank of radius 10 cm, initially filled with water to a height of 25 cm. The pyramid’s apex just touches the bottom of the tank. Given that the water level rises to 28 cm after the pyramid is submerged, find the height of the pyramid.`,
+options:["23 cm","27.12 cm","20.14 cm","28 cm"],
+answer:2
+},
+{
+q:`Two vessels contain mixtures of milk and water in the ratios 3:2 and 7:3, respectively. In what ratio should these mixtures be mixed so that the resulting mixture has milk and water in the ratio 5:3?`,
+options:["1 : 2","2 : 3","3 : 1","3 : 2"],
+answer:2
+},
+{
+q:`A sum is invested at compound interest (compounded annually) at a certain rate. The interest earned in the 1st year is ₹2,000, and in the 2nd year is ₹2,400. Find 50% of the sum invested.`,
+options:["₹4,000","₹7,000","₹5,000","₹8,000"],
+answer:2
+}
+];
+
+/* ===== SCRIPT BELOW UNCHANGED ===== */
+let index=0,answers=new Array(25).fill(null),
+reviewed=new Array(25).fill(false),
+timeLeft=TOTAL_TIME,submitted=false,reviewMode=false,timer,stripScroll=0;
+
+const app=document.getElementById("app");
+
+function startTimer(){
+ timer=setInterval(()=>{
+  if(!submitted && !reviewMode){
+   timeLeft--;
+   if(timeLeft<=0){submitted=true;renderResult();}
+   render();
+  }
+ },1000);
+}
+
+function render(){
+ if(submitted && !reviewMode){renderResult();return;}
+ const old=document.querySelector(".q-strip");
+ if(old) stripScroll=old.scrollLeft;
+
+ const q=QUESTIONS[index];
+ app.innerHTML=`
+ <div class="header">
+  <div class="title">Maths Sectional Mock</div>
+  <div class="timer">⏱ ${Math.floor(timeLeft/60)}:${String(timeLeft%60).padStart(2,"0")}</div>
+ </div>
+
+ <div class="sub">
+  <span>+2 / −0.5</span>
+  <span class="badge">Mathematics</span>
+ </div>
+
+ <div class="q-strip">
+ ${QUESTIONS.map((_,i)=>`<button class="qchip ${i===index?"current":""} ${answers[i]!=null?"answered":""} ${reviewed[i]?"reviewed":""}" onclick="jump(${i})">${i+1}</button>`).join("")}
+ </div>
+
+ <div class="question">Q${index+1}. ${q.q}</div>
+
+ <div class="options">
+ ${q.options.map((o,i)=>{
+   let cls="";
+   if(reviewMode){
+     if(i===q.answer) cls="correct";
+     else if(answers[index]===i) cls="wrong";
+   } else if(answers[index]===i) cls="selected";
+   return `<button class="option ${cls}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+ }).join("")}
+ </div>
+
+ <div class="footer">
+  <button class="btn gray" onclick="prev()">Prev</button>
+  ${reviewMode?`<button class="btn back-btn" onclick="backToAnalysis()">Back</button>`:`<button class="btn gray" onclick="mark()">Mark</button>`}
+  <button class="btn dark" onclick="next()">${index+1===25?"Submit":"Next"}</button>
+ </div>`;
+}
+
+function selectOpt(i){answers[index]=i;render();}
+function prev(){if(index>0)index--;render();}
+function next(){if(index<24)index++;else submitted=true;render();}
+function mark(){reviewed[index]=!reviewed[index];render();}
+function jump(i){index=i;render();}
+
+function renderResult(){
+ clearInterval(timer);
+ let a=0,c=0,w=0,m=0;
+ QUESTIONS.forEach((q,i)=>{
+  if(answers[i]!=null){
+   a++;
+   if(answers[i]===q.answer){c++;m+=MARKS_CORRECT;}
+   else{w++;m+=MARKS_WRONG;}
+  }
+ });
+ let pct=Math.round((m/50)*100);
+ let remark=pct>=80?"Excellent":pct>=60?"Good":pct>=40?"Average":"Needs Practice";
+
+ app.innerHTML=`
+ <div class="result">
+  <h2>Overall Performance</h2>
+  <div class="card">
+   <div>Total: 25</div>
+   <div>Attempted: ${a}</div>
+   <div>Correct: ${c}</div>
+   <div>Wrong: ${w}</div>
+   <div>Marks: ${m}/50</div>
+   <div>Remark: ${remark}</div>
+  </div>
+
+  <h3>Question-wise Analysis</h3>
+  ${QUESTIONS.map((q,i)=>{
+   let ua=answers[i];
+   let pill=ua==null?"gray":ua===q.answer?"green":"red";
+   return `<div class="qa">
+    <b>Q${i+1}.</b> ${q.q}<br><br>
+    <span class="pill ${pill}">Your: ${ua==null?"Skipped":String.fromCharCode(65+ua)}</span>
+    <span class="pill green">Correct: ${String.fromCharCode(65+q.answer)}</span>
+    <button class="review-btn" onclick="reviewQuestion(${i})">Review Q</button>
+   </div>`;
+  }).join("")}
+
+  <button class="restart" onclick="location.reload()">Retake Section</button>
+ </div>`;
+}
+
+function reviewQuestion(i){index=i;reviewMode=true;render();}
+function backToAnalysis(){reviewMode=false;renderResult();}
+
+startTimer();
+render();
+</script>
+</body>
+</html>

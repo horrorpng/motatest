@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MATHS SECTIONAL TEST</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const TOTAL_TIME = 25 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+  {
+    q: "A product marked Rs. 5,000 is sold at 20% discount. Find the selling price.",
+    options: ["Rs. 3,900", "Rs. 4,000", "Rs. 4,100", "Rs. 4,200"],
+    answer: 1
+  },
+  {
+    q: "A man walks 3 km at 4 km/h, 3 km at 6 km/h. Find average speed.",
+    options: ["4.8 km/h", "5 km/h", "5.2 km/h", "5.4 km/h"],
+    answer: 0
+  },
+  {
+    q: "An ice cream cone has a radius of 2 cm and slant height of 5 cm. If 100 such cones are to be painted externally (excluding base), what is the total painted area?",
+    options: ["4710 cm²", "1570 cm²", "6280 cm²", "3140 cm²"],
+    answer: 3
+  },
+  {
+    q: "A trader bought 120 scientific calculators, of which 50 were priced at ₹625.50 each, and the rest at ₹712.80 each. Due to a consignment delay, he had to pay an additional 6% storage cost on the total purchase. He sold 40 of the cheaper ones at a profit of 15%, and the rest at a loss of 10%. All calculators were sold at a 12% profit. What was his overall profit or loss percentage?",
+    options: ["4.68% loss", "4.93% profit", "5.12% profit", "5.30% loss"],
+    answer: 1
+  },
+  {
+    q: "A manufacturer reduces the diameter of their spherical bearing balls by 50% to cut costs. What is the percentage decrease in volume of each ball?",
+    options: ["87.5%", "75%", "50%", "65.5%"],
+    answer: 0
+  },
+  {
+    q: "From a point outside a circular garden, two tangents of length 15 m each are drawn. If the radius of the garden is 9 m, find the distance from the point to the centre.",
+    options: ["15 m", "16.2 m", "17.5 m", "18 m"],
+    answer: 2
+  },
+  {
+    q: "A and B together can do a job in 6 days. A alone does it in 9 days. In how many days can B alone do it?",
+    options: ["12 days", "15 days", "18 days", "10 days"],
+    answer: 2
+  },
+  {
+    q: "If sin x = 5/13 and x lies in (0°, 90°), then find the value of [(1 + cos x) / (1 − cos x)].",
+    options: ["25", "11", "39", "7"],
+    answer: 0
+  },
+  {
+    q: "A kite flying at a height of 60 metres above the ground is attached to a string that makes an angle of 45° with the ground. What is the length (in metres) of the string?",
+    options: ["40√2", "60√2", "70√2", "50√2"],
+    answer: 1
+  },
+  {
+    q: "In what ratio must a grocer mix two varieties of pulses costing Rs. 16 and Rs. 21 per kg, respectively, so as to get a mixture worth Rs. 18 per kg?",
+    options: ["1 : 2", "3 : 2", "3 : 5", "4 : 7"],
+    answer: 1
+  },
+  {
+    q: "If sin θ + cos θ = √3/2, and θ is an acute angle, find the value of sin²θ + cos²θ − 2 sin θ cos θ.",
+    options: ["1", "3/2", "5/4", "7/8"],
+    answer: 2
+  },
+  {
+    q: "The angle subtended by the diameter at any point on the circle is:",
+    options: ["30°", "60°", "90°", "180°"],
+    answer: 2
+  },
+  {
+    q: "The number of circles that can pass through two fixed points is:",
+    options: ["1", "2", "0", "Infinity"],
+    answer: 3
+  },
+  {
+    q: "A chord AC subtends an angle of 90° at the center O. If the radius of the circle is 8 cm, what is the length of the chord AC?",
+    options: ["8√2 cm", "8 cm", "16 cm", "8√3 cm"],
+    answer: 0
+  },
+  {
+    q: "The ratio of the length and perimeter of a rectangle is 7 : 22, respectively. If the area of the rectangle is 1,792 cm², find the breadth of the rectangle.",
+    options: ["28 cm", "32 cm", "44 cm", "10 cm"],
+    answer: 1
+  },
+  {
+    q: "A parallelogram has adjacent sides of 18 cm and 10 cm, and the angle between them is 60°. Find the exact area of the parallelogram and the height corresponding to the longer side.",
+    options: ["110√3 cm², 7√3 cm", "60√3 cm², 7√3 cm", "90√3 cm², 5√3 cm", "80√3 cm², 2√3 cm"],
+    answer: 2
+  },
+  {
+    q: "If (x + y) : (y + z) : (z + x) = 7 : 9 : 13 for positive real x, y, z, find x : y : z.",
+    options: ["7 : 2 : 11", "5 : 4 : 8", "11 : 3 : 15", "13 : 9 : 7"],
+    answer: 2
+  },
+  {
+    q: "There are 15 numbers. The average of all 15 is 20. The average of the first 9 numbers is 18. The average of the last 7 numbers is 24. What is the 9th number?",
+    options: ["28", "24", "30", "32"],
+    answer: 2
+  },
+  {
+    q: "A sum invested at rate r% simple interest for 5 years yields ₹1,500 as interest. If the rate were increased by 2% per annum for the same period, the interest would be ₹1,800. What was the original principal?",
+    options: ["₹2,500", "₹3,000", "₹3,200", "₹3,500"],
+    answer: 1
+  },
+  {
+    q: "Riya invests ₹60,000 and Kabir invests ₹80,000. At the end of the year, they earn a profit of ₹70,000. How much profit does Kabir get?",
+    options: ["₹30,000", "₹35,000", "₹40,000", "₹45,000"],
+    answer: 2
+  },
+  {
+    q: "A machine produces 120, 150, 130, and 100 units on four consecutive days. How many units should it produce on the 5th day to bring the average output to 130 units?",
+    options: ["130", "140", "150", "160"],
+    answer: 2
+  },
+  {
+    q: "Which of the following equations represents a line parallel to 3x − 2y = 6?",
+    options: ["3x − 2y = 10", "2x − 3y = 6", "3x + 5y = 6", "3x − 5y = 8"],
+    answer: 0
+  },
+  {
+    q: "Sum of A and B is 150 percent more than the sum of C and D. C is 25 percent more than D. If A is 100 percent more than B and D = 400, then what is the value of A?",
+    options: ["1500", "1200", "1400", "1800"],
+    answer: 0
+  },
+  {
+    q: "In how much time will a sum of Rs. 14,000 amount to Rs. 20,720 at the rate of 6 percent per annum at simple interest?",
+    options: ["5 years", "8 years", "10 years", "12 years"],
+    answer: 1
+  },
+  {
+    q: "P and Q working alone can complete a work in 9 days and 18 days respectively. They work on alternate days one at a time. P works on the first day. In how many days will the whole work be completed?",
+    options: ["11", "6", "12", "18"],
+    answer: 2
+  }
+];
+// State    
+    let currentIndex = 0;    
+    let answers = new Array(QUESTIONS.length).fill(null);     
+    let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+    let timeLeft = TOTAL_TIME;    
+    let timerId = null;    
+    let submitted = false;    
+    let isPaused = false;    
+    let reviewMode = false; // true when user is viewing a single question from analysis    
+    const app = document.getElementById("app");    
+    
+    function formatTime(sec){ const m = Math.floor(sec/60), s = sec%60; return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; }    
+    
+    function getStats(){    
+      const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+      QUESTIONS.forEach((q,i)=>{    
+        const a = answers[i];    
+        if (a !== null){    
+          s.attempted++;    
+          if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+          else { s.wrong++; s.marks += MARKS_WRONG; }    
+        }    
+      });    
+      return s;    
+    }    
+    
+    function renderQuestion(){    
+      if (reviewMode) isPaused = true;    
+      if (submitted && !reviewMode){ renderResult(); return; }    
+    
+      const q = QUESTIONS[currentIndex];    
+      const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+      const selected = answers[currentIndex];    
+    
+      const stripHtml = QUESTIONS.map((_,idx)=>{    
+        let cls = "qchip";    
+        if (idx===currentIndex) cls += " current";    
+        if (answers[idx] !== null) cls += " answered";    
+        if (reviewed[idx]) cls += " reviewed";    
+        return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+      }).join("");    
+    
+      app.innerHTML = `    
+        <div class="header">    
+          <div class="title">English</div>    
+          <div class="timer-wrap">    
+            <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+            <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+          </div>    
+        </div>    
+    
+        <div class="subheader">    
+          <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+          <span class="badge">English Comprehension</span>    
+        </div>    
+    
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progressPercent}%"></div></div>    
+    
+        <div class="q-strip"><div class="q-strip-inner">${stripHtml}</div></div>    
+    
+        <div class="section-tag">English Comprehension</div>    
+    
+        <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+    
+        <div class="options">    
+          ${q.options.map((opt,idx)=>{    
+            let classes = "";    
+            if (selected === idx && !reviewMode) classes = "selected";    
+            if (reviewMode){    
+              if (idx === q.answer) classes = "correct";    
+              else if (selected === idx && selected !== q.answer) classes = "wrong";    
+            } else {    
+              if (selected === idx) classes = "selected";    
+            }    
+            return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+          }).join("")}    
+        </div>    
+    
+        <div class="footer">    
+          <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+          <div class="nav-buttons">    
+            <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+            ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+            <button class="nav-btn" id="markBtn">Mark</button>    
+            <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+          </div>    
+        </div>    
+      `;    
+    
+      document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+        if (reviewMode){    
+          isPaused = true;    
+          renderQuestion();    
+          return;    
+        }    
+        isPaused = !isPaused;    
+        renderQuestion();    
+      });    
+    
+      document.querySelectorAll(".qchip").forEach(b=>{    
+        b.addEventListener("click", ()=>{ currentIndex = Number(b.dataset.q); reviewMode = false; renderQuestion(); });    
+      });    
+    
+      document.querySelectorAll(".option-btn").forEach(b=>{    
+        b.addEventListener("click", ()=>{    
+          const idx = Number(b.dataset.index);    
+          if (reviewMode){    
+            return;    
+          }    
+          answers[currentIndex] = idx;    
+          renderQuestion();    
+        });    
+      });    
+    
+      document.getElementById("prevBtn").addEventListener("click", ()=>{    
+        if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+      });    
+    
+      document.getElementById("nextBtn").addEventListener("click", ()=>{    
+        if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+        else {    
+          submitted = true;    
+          reviewMode = false;    
+          renderResult();    
+        }    
+      });    
+    
+      const markBtnEl = document.getElementById('markBtn');    
+      if (markBtnEl) {    
+        markBtnEl.addEventListener('click', ()=>{    
+          reviewed[currentIndex] = !reviewed[currentIndex];    
+          markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+          renderQuestion();    
+        });    
+      }    
+    
+      const back = document.getElementById("backAnalysis");    
+      if (back){    
+        back.addEventListener("click", ()=>{    
+          reviewMode = false;    
+          submitted = true;    
+          renderResult();    
+        });    
+      }    
+    }    
+    
+    function renderResult(){    
+      if (timerId){ clearInterval(timerId); timerId = null; }    
+      const s = getStats();    
+      const maxMarks = s.total * MARKS_CORRECT;    
+      const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+      let remark = percentage>=80 ? "Excellent! 💯": percentage>=60 ? "Good! 👍": percentage>=40 ? "Average. Can improve 🙂" : "Needs more practice 💪";    
+    
+      let qaHtml = "";    
+      QUESTIONS.forEach((q,i)=>{    
+        const user = answers[i];    
+        const correctIdx = q.answer;    
+        const isSkipped = user === null;    
+        const isCorrect = !isSkipped && user === correctIdx;    
+        const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` : isCorrect ? `<span class="pill-green">Correct</span>` : `<span class="pill-red">Wrong</span>`;    
+        const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+        const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+        qaHtml += `    
+          <div class="qa-card" id="qa-${i}">    
+            <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+            <div class="qa-answer-row">    
+              <div><span class="label">Your answer:</span> ${userText}</div>    
+              <div><span class="label">Correct answer:</span> ${correctText}</div>    
+              <div style="margin-left:auto">${pill}</div>    
+            </div>    
+            <div style="margin-top:8px;text-align:right">    
+              <button class="review-btn" data-q="${i}">Review Q</button>    
+            </div>    
+          </div>    
+        `;    
+      });    
+    
+      app.innerHTML = `    
+        <div class="result">    
+          <h2>ENG Section Analysis – CGL_ENG_MOCK.html</h2>    
+          <div class="tiny">9-minute sectional mock completed</div>    
+    
+          <div class="card">    
+            <div class="card-title">Overall Performance</div>    
+            <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+            <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+            <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+            <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+            <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+            <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+            <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+          </div>    
+    
+          <div style="margin-top:8px;margin-bottom:8px">    
+            <div class="card-title">Question-wise Review</div>    
+            ${qaHtml}    
+          </div>    
+    
+          <button class="restart-btn" id="restartBtn">Retake Section</button>    
+          <div class="tiny">Timer will restart from 9 minutes</div>    
+        </div>    
+      `;    
+    
+      document.querySelectorAll(".review-btn").forEach(b=>{    
+        b.addEventListener("click", ()=>{    
+          const idx = Number(b.dataset.q);    
+          currentIndex = idx;    
+          reviewMode = true;    
+          submitted = false;    
+          isPaused = true;    
+          renderQuestion();    
+        });    
+      });    
+    
+      document.getElementById("restartBtn").addEventListener("click", ()=>{    
+        currentIndex = 0;    
+        answers = new Array(QUESTIONS.length).fill(null);    
+        timeLeft = TOTAL_TIME;    
+        submitted = false;    
+        isPaused = false;    
+        reviewMode = false;    
+        startTimer();    
+        renderQuestion();    
+      });    
+    }    
+    
+    function startTimer(){    
+      if (timerId) clearInterval(timerId);    
+      timerId = setInterval(()=>{    
+        if (!isPaused && !submitted && !reviewMode){    
+          timeLeft--;    
+          if (timeLeft <= 0){    
+            submitted = true;    
+            reviewMode = false;    
+            renderResult();    
+            return;    
+          }    
+          const el = document.querySelector(".timer");    
+          if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+        } else {    
+          const el = document.querySelector(".timer");    
+          if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+        }    
+      }, 1000);    
+    }    
+    
+    startTimer();    
+    renderQuestion();    
+  </script>  </body>    </html>    
+

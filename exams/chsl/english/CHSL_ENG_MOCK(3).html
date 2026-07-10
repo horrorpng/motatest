@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>English Sectional Mock</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+/* English Sectional Mock – 13 Minutes */
+const TOTAL_TIME = 13 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+{
+  q: "Identify the part of the sentence that contains a grammatical error.\nThe movie, which you recommended, was both interesting and entertain.",
+  options: [
+    "The movie",
+    "which you recommended",
+    "was both interesting",
+    "and entertain"
+  ],
+  answer: 3
+},
+{
+  q: "Select the most appropriate synonym of the word: Abrogate",
+  options: [
+    "Institute",
+    "Enact",
+    "Repeal",
+    "Approve"
+  ],
+  answer: 2
+},
+{
+  q: "Fill in the blank with the most appropriate phrasal verb.\nShe was so overwhelmed with tasks that she had to ___ some responsibilities to her assistant.",
+  options: [
+    "hand out",
+    "hand down",
+    "hand over",
+    "hand in"
+  ],
+  answer: 2
+},
+{
+  q: "Fill in the blank with the most appropriate phrase.\nDue to the budget cuts, the organization had to operate strictly ___.",
+  options: [
+    "in a nutshell",
+    "on a shoestring",
+    "with flying colors",
+    "under the radar"
+  ],
+  answer: 1
+},
+{
+  q: "Passage for Q5–Q9\nMandala art, a term derived from the Sanskrit word for “circle,” refers to mathematical and metaphorical works of art that have captivated people for ages. In essence, a mandala is a circle pattern that represents the cosmos and the individual’s journey. The genesis of everything, one’s identity, or a heavenly essence are all represented by the design’s centre. Complex and often symmetrical patterns spread forth from this hub representing the universe’s growth and the continuous flow of life.\nMandalas, which have their roots in both Buddhism and Hinduism, are powerful instruments for spiritual ritual and meditation. In order to symbolize the fleeting nature of life and the rejection of earthly possessions, monks painstakingly create these elaborate patterns out of coloured sand, only to brush them away when finished. Making a mandala has therapeutic benefits in addition to its religious significance. Drawing its geometric patterns in a methodical and repeated manner helps to reduce tension, improve focus, and calm the mind.\nWhat does the term “mandala” mean in Sanskrit?",
+  options: [
+    "Artwork",
+    "Circle",
+    "Meditation",
+    "Universe"
+  ],
+  answer: 1
+},
+{
+  q: "Select the most appropriate synonym of the word: Epistemic",
+  options: [
+    "Physical",
+    "Knowledge-related",
+    "Symbolic",
+    "Spatial"
+  ],
+  answer: 1
+},
+{
+  q: "What does the centre of a mandala represent?",
+  options: [
+    "The universe",
+    "One’s identity or a heavenly essence",
+    "Earthly possessions",
+    "The continuous flow of life"
+  ],
+  answer: 1
+},
+{
+  q: "According to the passage, why do monks create mandalas out of coloured sand?",
+  options: [
+    "To preserve the artwork",
+    "To symbolize the fleeting nature of life",
+    "To attract good fortune",
+    "To showcase their artistic skills"
+  ],
+  answer: 1
+},
+{
+  q: "What therapeutic benefit is associated with making a mandala?",
+  options: [
+    "It increases artistic creativity",
+    "It improves physical health",
+    "It helps reduce tension and calm the mind",
+    "It helps in building wealth"
+  ],
+  answer: 2
+},
+{
+  q: "What is the primary purpose of mandalas in Buddhist and Hindu traditions?",
+  options: [
+    "To represent artistic expression",
+    "To symbolize the cosmos and the individual’s journey",
+    "To depict daily life",
+    "To showcase geometric patterns"
+  ],
+  answer: 1
+},
+{
+  q: "Which of the following sentences uses the word “close” with the SAME meaning as in the sentence below?\n“Please be sure to close the door when you leave.”",
+  options: [
+    "She lives very close to the library.",
+    "The museum is close to the park.",
+    "It’s a good idea to close all the windows before it starts to rain.",
+    "He keeps his family photos close to his bed."
+  ],
+  answer: 2
+},
+{
+  q: "Choose the correctly spelt word.",
+  options: [
+    "Jaundice",
+    "Jaundise",
+    "Joundice",
+    "Jaundiece"
+  ],
+  answer: 0
+},
+{
+  q: "Choose the correctly spelt word.",
+  options: [
+    "Psychology",
+    "Psycology",
+    "phycoloy",
+    "phycolgy"
+  ],
+  answer: 0
+},
+{
+  q: "Choose the correct meaning of the idiom: Sit on the fence",
+  options: [
+    "To be very decisive about a matter",
+    "To refuse to give an opinion or take a side",
+    "To carefully choose a position",
+    "To be in a neutral, relaxed position"
+  ],
+  answer: 1
+},
+{
+  q: "Select the most appropriate antonym of the word: Futile",
+  options: [
+    "Useless",
+    "Pointless",
+    "Effective",
+    "Vain"
+  ],
+  answer: 2
+},
+{
+  q: "Choose the correct one-word substitute for:\nA person who studies the stars and space",
+  options: [
+    "Astrologer",
+    "Astronomer",
+    "Meteorologist",
+    "Geographer"
+  ],
+  answer: 1
+},
+{
+  q: "Choose the correct one-word substitute for:\nA person who supports the status quo and is opposed to change",
+  options: [
+    "Conservative",
+    "Liberal",
+    "Reactionary",
+    "Progressive"
+  ],
+  answer: 0
+},
+{
+  q: "Select the most appropriate antonym of the word: Garrulous",
+  options: [
+    "Talkative",
+    "Loquacious",
+    "Quiet",
+    "Chatty"
+  ],
+  answer: 2
+},
+{
+  q: "Change the following sentence into the Active form.\nThe report is expected to be delivered by the committee next week.",
+  options: [
+    "The committee is expecting to deliver the report next week.",
+    "The committee is expected to deliver the report next week.",
+    "The committee expects to deliver the report next week.",
+    "The committee will deliver the report next week."
+  ],
+  answer: 2
+},
+{
+  q: "Select the option that expresses the given sentence in indirect voice.\nThe tour guide said, “We have been walking for hours, but the ruins we have been looking for are just around this corner, and we will be there in a few minutes.”",
+  options: [
+    "The tour guide said that they had been walking for hours, but the ruins they had been looking for were just around that corner, and they would be there in a few minutes.",
+    "The tour guide said that we have been walking for hours, but the ruins we have been looking for are just around this corner, and we will be there in a few minutes.",
+    "The tour guide said that they had been walking for hours, but the ruins they had been looking for are just around that corner, and they will be there in a few minutes.",
+    "The tour guide said that they were walking for hours, but the ruins they were looking for were just around that corner, and they would be there in a few minutes."
+  ],
+  answer: 0
+},
+{
+  q: "Choose the most suitable option to replace the highlighted part of the sentence.\nThe manager was asked to write a report in a quick, detailed and in a thorough manner.",
+  options: [
+    "in a quick, detailed, and thorough manner",
+    "in a quick, detailed and in thorough manner",
+    "in a quick, detailing and thorough manner",
+    "quickly, detailed and thoroughly"
+  ],
+  answer: 0
+},
+{
+  q: "Choose the most suitable option to replace the highlighted part of the sentence.\nThe country has at least twenty colleges of whom only six are officially recognized.",
+  options: [
+    "of whom only six are officially recognized",
+    "of whom only six have been officially recognized",
+    "of which only six has official recognition",
+    "of which only six are officially recognized"
+  ],
+  answer: 3
+},
+{
+  q: "Choose the correct passive voice transformation of the sentence.\nWill the company launch the new product?",
+  options: [
+    "The new product will be launched by the company?",
+    "Will the new product be launched by the company?",
+    "Is the new product launched by the company?",
+    "The new product would be launched by the company?"
+  ],
+  answer: 1
+},
+{
+  q: "Select the option that expresses the given sentence in direct voice.\nHe said to her that the film they had watched the previous night was not as good as he had expected it to be.",
+  options: [
+    "He said to her, “The film we watched last night was not as good as I expected it to be.”",
+    "He said to her, “The film we had watched last night was not as good as I had expected it to be.”",
+    "He said to her, “The film we watched the previous night was not as good as I expected it to be.”",
+    "He said to her, “The film we had watched last night was not as good as I expected it to be.”"
+  ],
+  answer: 1
+},
+{
+  q: "Rearrange the following sentences to form a meaningful and grammatically correct paragraph.\nP. The restoration project was hailed as a triumph of community and expert cooperation.\nQ. The valuable texts and historic architecture of the old library were preserved throughout its restoration.\nR. The library quickly gained international recognition as a cultural icon.\nS. To guarantee the restoration’s correctness, local historians and preservationists collaborated.",
+  options: [
+    "R, Q, P, S",
+    "S, Q, P, R",
+    "R, S, P, Q",
+    "Q, S, P, R"
+  ],
+  answer: 3
+}
+];
+// State    
+let currentIndex = 0;    
+let answers = new Array(QUESTIONS.length).fill(null);     
+let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+let timeLeft = TOTAL_TIME;    
+let timerId = null;    
+let submitted = false;    
+let isPaused = false;    
+let reviewMode = false; // true when user is viewing a single question from analysis    
+const app = document.getElementById("app");    
+
+function formatTime(sec){ 
+  const m = Math.floor(sec/60), s = sec%60; 
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; 
+}    
+
+function getStats(){    
+  const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+  QUESTIONS.forEach((q,i)=>{    
+    const a = answers[i];    
+    if (a !== null){    
+      s.attempted++;    
+      if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+      else { s.wrong++; s.marks += MARKS_WRONG; }    
+    }    
+  });    
+  return s;    
+}    
+
+function renderQuestion(){    
+  if (reviewMode) isPaused = true;    
+  if (submitted && !reviewMode){ renderResult(); return; }    
+
+  const q = QUESTIONS[currentIndex];    
+  const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+  const selected = answers[currentIndex];    
+
+  const stripHtml = QUESTIONS.map((_,idx)=>{    
+    let cls = "qchip";    
+    if (idx===currentIndex) cls += " current";    
+    if (answers[idx] !== null) cls += " answered";    
+    if (reviewed[idx]) cls += " reviewed";    
+    return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+  }).join("");    
+
+  app.innerHTML = `    
+    <div class="header">    
+      <div class="title">English Sectional Mock</div>    
+      <div class="timer-wrap">    
+        <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+        <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+      </div>    
+    </div>    
+
+    <div class="subheader">    
+      <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+      <span class="badge">English</span>    
+    </div>    
+
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width:${progressPercent}%"></div>
+    </div>    
+
+    <div class="q-strip">
+      <div class="q-strip-inner">${stripHtml}</div>
+    </div>    
+
+    <div class="section-tag">English</div>    
+
+    <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+
+    <div class="options">    
+      ${q.options.map((opt,idx)=>{    
+        let classes = "";    
+        if (selected === idx && !reviewMode) classes = "selected";    
+        if (reviewMode){    
+          if (idx === q.answer) classes = "correct";    
+          else if (selected === idx && selected !== q.answer) classes = "wrong";    
+        } else {    
+          if (selected === idx) classes = "selected";    
+        }    
+        return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+      }).join("")}    
+    </div>    
+
+    <div class="footer">    
+      <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+      <div class="nav-buttons">    
+        <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+        ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+        <button class="nav-btn" id="markBtn">Mark</button>    
+        <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+      </div>    
+    </div>    
+  `;    
+
+  document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+    if (reviewMode){ isPaused = true; renderQuestion(); return; }    
+    isPaused = !isPaused;    
+    renderQuestion();    
+  });    
+
+  document.querySelectorAll(".qchip").forEach(b=>{    
+    b.addEventListener("click", ()=>{ 
+      currentIndex = Number(b.dataset.q); 
+      reviewMode = false; 
+      renderQuestion(); 
+    });    
+  });    
+
+  document.querySelectorAll(".option-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.index);    
+      if (reviewMode) return;    
+      answers[currentIndex] = idx;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{    
+    if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+  });    
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{    
+    if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+    else { submitted = true; reviewMode = false; renderResult(); }    
+  });    
+
+  const markBtnEl = document.getElementById('markBtn');    
+  if (markBtnEl){    
+    markBtnEl.addEventListener('click', ()=>{    
+      reviewed[currentIndex] = !reviewed[currentIndex];    
+      markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+      renderQuestion();    
+    });    
+  }    
+
+  const back = document.getElementById("backAnalysis");    
+  if (back){    
+    back.addEventListener("click", ()=>{    
+      reviewMode = false;    
+      submitted = true;    
+      renderResult();    
+    });    
+  }    
+}    
+
+function renderResult(){    
+  if (timerId){ clearInterval(timerId); timerId = null; }    
+  const s = getStats();    
+  const maxMarks = s.total * MARKS_CORRECT;    
+  const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+  let remark = percentage>=80 ? "Excellent! 💯"
+             : percentage>=60 ? "Good! 👍"
+             : percentage>=40 ? "Average. Can improve 🙂"
+             : "Needs more practice 💪";    
+
+  let qaHtml = "";    
+  QUESTIONS.forEach((q,i)=>{    
+    const user = answers[i];    
+    const correctIdx = q.answer;    
+    const isSkipped = user === null;    
+    const isCorrect = !isSkipped && user === correctIdx;    
+    const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` 
+               : isCorrect ? `<span class="pill-green">Correct</span>` 
+               : `<span class="pill-red">Wrong</span>`;    
+
+    const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+    const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+
+    qaHtml += `    
+      <div class="qa-card" id="qa-${i}">    
+        <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+        <div class="qa-answer-row">    
+          <div><span class="label">Your answer:</span> ${userText}</div>    
+          <div><span class="label">Correct answer:</span> ${correctText}</div>    
+          <div style="margin-left:auto">${pill}</div>    
+        </div>    
+        <div style="margin-top:8px;text-align:right">    
+          <button class="review-btn" data-q="${i}">Review Q</button>    
+        </div>    
+      </div>    
+    `;    
+  });    
+
+  app.innerHTML = `    
+    <div class="result">    
+      <h2>English Section Analysis</h2>    
+      <div class="tiny">9-minute sectional mock completed</div>    
+
+      <div class="card">    
+        <div class="card-title">Overall Performance</div>    
+        <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+        <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+        <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+        <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+        <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+        <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+        <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+      </div>    
+
+      <div style="margin-top:8px;margin-bottom:8px">    
+        <div class="card-title">Question-wise Review</div>    
+        ${qaHtml}    
+      </div>    
+
+      <button class="restart-btn" id="restartBtn">Retake Section</button>    
+      <div class="tiny">Timer will restart from 9 minutes</div>    
+    </div>    
+  `;    
+
+  document.querySelectorAll(".review-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.q);    
+      currentIndex = idx;    
+      reviewMode = true;    
+      submitted = false;    
+      isPaused = true;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("restartBtn").addEventListener("click", ()=>{    
+    currentIndex = 0;    
+    answers = new Array(QUESTIONS.length).fill(null);    
+    timeLeft = TOTAL_TIME;    
+    submitted = false;    
+    isPaused = false;    
+    reviewMode = false;    
+    startTimer();    
+    renderQuestion();    
+  });    
+}    
+
+function startTimer(){    
+  if (timerId) clearInterval(timerId);    
+  timerId = setInterval(()=>{    
+    if (!isPaused && !submitted && !reviewMode){    
+      timeLeft--;    
+      if (timeLeft <= 0){    
+        submitted = true;    
+        reviewMode = false;    
+        renderResult();    
+        return;    
+      }    
+    }    
+    const el = document.querySelector(".timer");    
+    if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+  }, 1000);    
+}    
+
+startTimer();    
+renderQuestion();
+</script>  </body>    </html>

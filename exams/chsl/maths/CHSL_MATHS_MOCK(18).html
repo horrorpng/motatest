@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MATHS SECTIONAL TEST</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const TOTAL_TIME = 25 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+  {
+    q: "Which of these fractions results in a non-terminating repeating decimal?",
+    options: ["1/4", "1/17", "1/10", "1/8"],
+    answer: 1
+  },
+  {
+    q: "A man purchases a certain number of identical calculators at a rate of ₹1,200 per dozen. He sells them at ₹110 per piece. Find how many calculators he bought if his total profit is ₹360.",
+    options: ["18", "30", "36", "24"],
+    answer: 2
+  },
+  {
+    q: "A metal sphere is dropped into a cylindrical container of diameter 20 cm partially filled with water. If the water rises by 1.5 cm, what is the radius of the sphere?",
+    options: ["4.5 cm", "5.1 cm", "4.8 cm", "5.7 cm"],
+    answer: 2
+  },
+  {
+    q: "The marked price of a cupboard is ₹3,200, which is 25% above the cost price. It is sold at a discount of 10% on the marked price. Find the profit percentage.",
+    options: ["10.5%", "11.5%", "12.5%", "14.5%"],
+    answer: 2
+  },
+  {
+    q: "In a hostel, the average age of 30 students was 18 years. Later, 5 students left and 5 new students joined. The average age of the new group became 17.2 years. If the average age of the 5 students who left was 20.4 years, find the average age of the 5 students who joined.",
+    options: ["14.8 years", "15.6 years", "16.2 years", "17.4 years"],
+    answer: 1
+  },
+  {
+    q: "A quality control officer tracks the defect rates in 4 different machines in a textile factory. The first machine produces fabrics with an average defect rate of 1.8%, the second with 2.4%, and the third with 1.6%. The fourth machine operated for 5 fewer hours than the average runtime of the first three, yet its total defective output was 0.92 units. If the total number of defective units from all four machines is 4.12, and each machine's total production was identical, find the defect percentage of the fourth machine.",
+    options: ["1.52%", "1.58%", "1.667%", "1.73%"],
+    answer: 2
+  },
+  {
+    q: "In a digital learning centre, there are three types of online tests. The average score of a student in the first and second test is 82.6. The average score in the second and third test is 84.2. The average of the first and third test is 80.4. If the student scored 2.5 marks less in the third test than in the first, find the marks obtained in the second test.",
+    options: ["83.25", "83.55", "82.95", "84.05"],
+    answer: 1
+  },
+  {
+    q: "A, B, and C invest ₹20,000, ₹30,000, and ₹50,000, respectively, in a business. The profit at the end of the year is ₹50,000. What is A's share of the profit?",
+    options: ["Rs. 9000", "Rs. 10000", "Rs. 11000", "Rs. 12000"],
+    answer: 1
+  },
+  {
+    q: "A factory produces cylindrical cans, and each day it slightly increases the size of the label printed on the cans to match a design upgrade. On the first day, the label height is 1.2 cm, and each day, the height increases by 0.3 cm to improve visibility. What will be the height of the label on the 10th day?",
+    options: ["3 cm", "3.6 cm", "3.9 cm", "4.2 cm"],
+    answer: 2
+  },
+  {
+    q: "What is the radius of the circumscribed circle for a triangle with sides 16, 30, 34 units?",
+    options: ["15 cm", "16 cm", "17 cm", "18 cm"],
+    answer: 2
+  },
+  {
+    q: "Anshu invested a certain sum at a simple interest of r% p.a. such that it amounts to 180% of itself in 5 years. Find the interest earned when Rs. 2500 is invested at a simple interest of r% p.a. for 2 years.",
+    options: ["Rs. 800", "Rs. 760", "Rs. 920", "Rs. 600"],
+    answer: 0
+  },
+  {
+    q: "Aman distributed 80% of his total money between Kavya and Aryan in the ratio 3 : 5. Kavya invested her share at 9% p.a. and Aryan at 6% p.a. simple interest for 6 years. If the difference in the interest earned by Aryan and Kavya is Rs. 2,592, then what is the total amount Aman had?",
+    options: ["Rs. 1,44,000", "Rs. 1,12,000", "Rs. 1,67,000", "Rs. 1,21,000"],
+    answer: 0
+  },
+  {
+    q: "A ladder rests against a vertical wall and makes an angle θ with the horizontal ground such that tan θ = 5/12. If the length of the ladder is 13 meters, find the height at which the ladder touches the wall.",
+    options: ["15 meters", "11 meters", "5 meters", "8 meters"],
+    answer: 2
+  },
+  {
+    q: "A sum of Rs. 6,400 amounts to Rs. 8,100 in 8 years at a certain rate of interest, compounded annually. Find the amount received after 4 years when Rs. 2,240 are invested at same rate of compound interest (compounded annually).",
+    options: ["Rs. 2,600", "Rs. 2,330", "Rs. 2,880", "Rs. 2,520"],
+    answer: 3
+  },
+  {
+    q: "The ratio between the son and mother is 1 : 3. After five years, the ratio of their age becomes 3 : 7. What are the ages of the son and mother?",
+    options: ["10, 30", "5, 25", "8, 28", "7, 27"],
+    answer: 0
+  },
+  {
+    q: "In a circle, chord AB subtends an angle of 75° at the circumference at point C. A tangent is drawn at point A. If the angle between this tangent and chord AC is 40°, what is the measure of the angle subtended by the minor arc AC at the center of the circle?",
+    options: ["80°", "100°", "110°", "150°"],
+    answer: 0
+  },
+  {
+    q: "A car and a bus travel at speeds in the ratio of 5:3. The bus covers a distance of 360 km in 6 hours. What is the time taken by the car to cover the same distance?",
+    options: ["4 hours", "3.6 hours", "4.5 hours", "6 hours"],
+    answer: 1
+  },
+  {
+    q: "In a class, ratio of the boys to the girls is 5:3. If 20% of the boys and 40% of the girls fail an exam, what is the ratio of the number of boys who passed to the number of girls who passed?",
+    options: ["20:9", "9:20", "21:19", "22:7"],
+    answer: 0
+  },
+  {
+    q: "If sec(θ) = cosec(42°), what is the value of θ?",
+    options: ["48°", "138°", "58°", "42°"],
+    answer: 0
+  },
+  {
+    q: "If (√3)⁵ × 9² = 3ⁿ × 3√3, then what is the value of n?",
+    options: ["3", "4", "5", "6"],
+    answer: 2
+  },
+  {
+    q: "If y = 3 - √8, find the value of y + 1/y.",
+    options: ["3", "4", "5", "6"],
+    answer: 3
+  },
+  {
+    q: "The areas of two similar triangles are 5 cm² and 45 cm². If a side of the smaller triangle is 2 cm, what is the length of the corresponding side of the larger triangle?",
+    options: ["3 cm", "7 cm", "5 cm", "6 cm"],
+    answer: 3
+  },
+  {
+    q: "A trapezoid is formed by cutting a smaller triangle from the top of a larger similar triangle. If the height of the smaller triangle is 1/3 of the height of the larger triangle, what is the ratio of the area of the trapezoid to the area of the larger triangle?",
+    options: ["1:9", "8:9", "3:4", "2:3"],
+    answer: 1
+  },
+  {
+    q: "If x + y = 7 and xy = 12, calculate the value of x² + y².",
+    options: ["24", "25", "18", "20"],
+    answer: 1
+  },
+  {
+    q: "If x + y = 12 and x - y = 4, find (x^3 + y^3) / (x + y).",
+    options: ["48", "45", "42", "46"],
+    answer: 0
+  }
+];
+// State
+let currentIndex = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags
+let timeLeft = TOTAL_TIME;
+let timerId = null;
+let submitted = false;
+let isPaused = false;
+let reviewMode = false; // true when user is viewing a single question from analysis
+const app = document.getElementById("app");
+
+function formatTime(sec){
+  const m = Math.floor(sec/60), s = sec%60;
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`;
+}
+
+function getStats(){
+  const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };
+  QUESTIONS.forEach((q,i)=>{
+    const a = answers[i];
+    if (a !== null){
+      s.attempted++;
+      if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }
+      else { s.wrong++; s.marks += MARKS_WRONG; }
+    }
+  });
+  return s;
+}
+
+function renderQuestion(){
+  if (reviewMode) isPaused = true;
+  if (submitted && !reviewMode){ renderResult(); return; }
+
+  const q = QUESTIONS[currentIndex];
+  const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;
+  const selected = answers[currentIndex];
+
+  const stripHtml = QUESTIONS.map((_,idx)=>{
+    let cls = "qchip";
+    if (idx===currentIndex) cls += " current";
+    if (answers[idx] !== null) cls += " answered";
+    if (reviewed[idx]) cls += " reviewed";
+    return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;
+  }).join("");
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="title">Maths Sectional Mock – MATHS.html</div>
+      <div class="timer-wrap">
+        <div class="timer">⏱ ${formatTime(timeLeft)}</div>
+        <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>
+      </div>
+    </div>
+
+    <div class="subheader">
+      <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>
+      <span class="badge">Mathematics</span>
+    </div>
+
+    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progressPercent}%"></div></div>
+
+    <div class="q-strip"><div class="q-strip-inner">${stripHtml}</div></div>
+
+    <div class="section-tag">Mathematics</div>
+
+    <div class="question-text">Q${currentIndex+1}. ${q.q}</div>
+
+    <div class="options">
+      ${q.options.map((opt,idx)=>{
+        let classes = "";
+        if (selected === idx && !reviewMode) classes = "selected";
+        if (reviewMode){
+          if (idx === q.answer) classes = "correct";
+          else if (selected === idx && selected !== q.answer) classes = "wrong";
+        } else {
+          if (selected === idx) classes = "selected";
+        }
+        return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;
+      }).join("")}
+    </div>
+
+    <div class="footer">
+      <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>
+      <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>
+        ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }
+        <button class="nav-btn" id="markBtn">Mark</button>
+        <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("pauseBtn").addEventListener("click", ()=>{
+    if (reviewMode){
+      isPaused = true;
+      renderQuestion();
+      return;
+    }
+    isPaused = !isPaused;
+    renderQuestion();
+  });
+
+  document.querySelectorAll(".qchip").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      currentIndex = Number(b.dataset.q);
+      reviewMode = false;
+      renderQuestion();
+    });
+  });
+
+  document.querySelectorAll(".option-btn").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const idx = Number(b.dataset.index);
+      if (reviewMode) return;
+      answers[currentIndex] = idx;
+      renderQuestion();
+    });
+  });
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{
+    if (currentIndex>0){
+      currentIndex--;
+      reviewMode = false;
+      renderQuestion();
+    }
+  });
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{
+    if (currentIndex+1 < QUESTIONS.length){
+      currentIndex++;
+      reviewMode = false;
+      renderQuestion();
+    } else {
+      submitted = true;
+      reviewMode = false;
+      renderResult();
+    }
+  });
+
+  const markBtnEl = document.getElementById('markBtn');
+  if (markBtnEl) {
+    markBtnEl.addEventListener('click', ()=>{
+      reviewed[currentIndex] = !reviewed[currentIndex];
+      markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';
+      renderQuestion();
+    });
+  }
+
+  const back = document.getElementById("backAnalysis");
+  if (back){
+    back.addEventListener("click", ()=>{
+      reviewMode = false;
+      submitted = true;
+      renderResult();
+    });
+  }
+}
+
+function renderResult(){
+  if (timerId){ clearInterval(timerId); timerId = null; }
+  const s = getStats();
+  const maxMarks = s.total * MARKS_CORRECT;
+  const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;
+  let remark = percentage>=80 ? "Excellent! 💯": percentage>=60 ? "Good! 👍": percentage>=40 ? "Average. Can improve 🙂" : "Needs more practice 💪";
+
+  let qaHtml = "";
+  QUESTIONS.forEach((q,i)=>{
+    const user = answers[i];
+    const correctIdx = q.answer;
+    const isSkipped = user === null;
+    const isCorrect = !isSkipped && user === correctIdx;
+    const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` : isCorrect ? `<span class="pill-green">Correct</span>` : `<span class="pill-red">Wrong</span>`;
+    const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;
+    const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;
+    qaHtml += `
+      <div class="qa-card" id="qa-${i}">
+        <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>
+        <div class="qa-answer-row">
+          <div><span class="label">Your answer:</span> ${userText}</div>
+          <div><span class="label">Correct answer:</span> ${correctText}</div>
+          <div style="margin-left:auto">${pill}</div>
+        </div>
+        <div style="margin-top:8px;text-align:right">
+          <button class="review-btn" data-q="${i}">Review Q</button>
+        </div>
+      </div>
+    `;
+  });
+
+  app.innerHTML = `
+    <div class="result">
+      <h2>Maths Section Analysis – CHSL_MATHS_MOCK(6).html</h2>
+      <div class="tiny">9-minute sectional mock completed</div>
+
+      <div class="card">
+        <div class="card-title">Overall Performance</div>
+        <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>
+        <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>
+        <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>
+        <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>
+        <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>
+        <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>
+        <div class="stat-row"><span>Remark</span><span>${remark}</span></div>
+      </div>
+
+      <div style="margin-top:8px;margin-bottom:8px">
+        <div class="card-title">Question-wise Review</div>
+        ${qaHtml}
+      </div>
+
+      <button class="restart-btn" id="restartBtn">Retake Section</button>
+      <div class="tiny">Timer will restart from 9 minutes</div>
+    </div>
+  `;
+
+  document.querySelectorAll(".review-btn").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const idx = Number(b.dataset.q);
+      currentIndex = idx;
+      reviewMode = true;
+      submitted = false;
+      isPaused = true;
+      renderQuestion();
+    });
+  });
+
+  document.getElementById("restartBtn").addEventListener("click", ()=>{
+    currentIndex = 0;
+    answers = new Array(QUESTIONS.length).fill(null);
+    timeLeft = TOTAL_TIME;
+    submitted = false;
+    isPaused = false;
+    reviewMode = false;
+    startTimer();
+    renderQuestion();
+  });
+}
+
+function startTimer(){
+  if (timerId) clearInterval(timerId);
+  timerId = setInterval(()=>{
+    if (!isPaused && !submitted && !reviewMode){
+      timeLeft--;
+      if (timeLeft <= 0){
+        submitted = true;
+        reviewMode = false;
+        renderResult();
+        return;
+      }
+      const el = document.querySelector(".timer");
+      if (el) el.textContent = "⏱ " + formatTime(timeLeft);
+    } else {
+      const el = document.querySelector(".timer");
+      if (el) el.textContent = "⏱ " + formatTime(timeLeft);
+    }
+  }, 1000);
+}
+
+startTimer();
+renderQuestion();
+</script>  </body>    </html>

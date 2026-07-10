@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>English Sectional Mock</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+/* English Sectional Mock – 13 Minutes */
+const TOTAL_TIME = 13 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+  {
+    q: "Identify the part of the sentence that contains a grammatical error.\nThe main affect of the new policy will be an increase in productivity.",
+    options: [
+      "The main affect",
+      "of the new policy",
+      "will be an increase",
+      "in productivity"
+    ],
+    answer: 0
+  },
+  {
+    q: "Fill in the blank with the most appropriate preposition.\nHis promotion was contingent ___ the outcome of the annual review.",
+    options: ["upto", "on", "to", "into"],
+    answer: 1
+  },
+  {
+    q: "Select the most appropriate synonym of the word: TRANSHISTORICAL",
+    options: ["Timeless", "Ancient", "Recent", "Futuristic"],
+    answer: 0
+  },
+  {
+    q: "Choose the correctly spelt word.",
+    options: ["Extroversion", "Extroverison", "Extroverssion", "Extroversin"],
+    answer: 0
+  },
+  {
+    q: "Which of the following sentences uses the word “minute” with the same meaning as in the sentence?\n“The microscope revealed a minute speck of dust.”",
+    options: [
+      "The meeting will start in a few minutes.",
+      "I was just a minute away from being late.",
+      "The camera captured every minute detail of the insect’s wing.",
+      "The alarm went off in exactly sixty seconds, or one minute."
+    ],
+    answer: 2
+  },
+  {
+    q: "Choose the correctly spelt word.",
+    options: ["Business", "Busyness", "Bussiness", "Buseness"],
+    answer: 0
+  },
+  {
+    q: "PASSAGE:\nThe idea of progress has always gone hand in hand with the evolution of human beings and the invention of technology. Each technological revolution has unearthed revolutionary changes that have rewritten the human experience in the past. From the invention of the printing press to the invention of the internet, technological breakthroughs have shaped the manner in which we live, work, and communicate.\n\nBut with our arrival in an age of artificial intelligence, automation, and biotechnology comes a growing paradox: while these technologies offer unparalleled convenience and power, they also undermine tried-and-true social forms and erode the very notion of what it means to be human.\n\nWhat is the main paradox introduced in the passage regarding technological advancements?",
+    options: [
+      "Technology always improves quality of life",
+      "Technology eliminates all forms of labor",
+      "Technology offers convenience but also undermines social structures and the notion of being human",
+      "Technology solves all human problems without consequences"
+    ],
+    answer: 2
+  },
+  {
+    q: "According to the passage, what has been one of the positive impacts of technological advances?",
+    options: [
+      "Automation has reduced job loss",
+      "Medical advances such as gene editing and precision medicine promise to cure previously incurable diseases",
+      "Communication technology has caused more isolation",
+      "Technological advances have had no impact on the standard of living"
+    ],
+    answer: 1
+  },
+  {
+    q: "What negative consequence of technology is mentioned in the passage?",
+    options: [
+      "It makes life more comfortable",
+      "It creates a sense of disconnection and fear for the future",
+      "It helps people across borders and cultures",
+      "It eliminates the need for privacy"
+    ],
+    answer: 1
+  },
+  {
+    q: "What question does the passage raise about our relationship with technology?",
+    options: [
+      "How can we make technology more affordable?",
+      "How can we use technology to solve political conflicts?",
+      "Are we masters of technology, or is technology the master of us?",
+      "Should we stop using technology altogether?"
+    ],
+    answer: 2
+  },
+  {
+    q: "What does the passage suggest is necessary to make progress more just and sustainable?",
+    options: [
+      "Increasing dependence on technology",
+      "Resolving the new issues brought by technology",
+      "Limiting technological innovations",
+      "Relying solely on automation to solve problems"
+    ],
+    answer: 1
+  },
+  {
+    q: "Choose the correct meaning of the idiom: Part and parcel",
+    options: [
+      "A small, unimportant detail",
+      "A non-essential part of a whole",
+      "An integral and unavoidable component",
+      "A delivery service for packages"
+    ],
+    answer: 2
+  },
+  {
+    q: "Select the most appropriate antonym of the word: Credulous",
+    options: ["Trusting", "Gullible", "Naive", "Skeptical"],
+    answer: 3
+  },
+  {
+    q: "Choose the correct one-word substitute for:\nThe killing of one’s own mother",
+    options: ["Matricide", "Patricide", "Homicide", "Fratricide"],
+    answer: 0
+  },
+  {
+    q: "Choose the correct one-word substitute for:\nA large-scale departure of people from one place",
+    options: ["Exodus", "Emigration", "Immigration", "Migration"],
+    answer: 0
+  },
+  {
+    q: "Change the following sentence into the Active form.\nA new bridge is being constructed by the city council.",
+    options: [
+      "The city council is constructing a new bridge.",
+      "A new bridge constructed the city council.",
+      "The city council constructed a new bridge.",
+      "The city council has constructed a new bridge."
+    ],
+    answer: 0
+  },
+  {
+    q: "Select the most appropriate antonym of the word: Ineffable",
+    options: ["Expressible", "Inarticulate", "Unfathomable", "Indescribable"],
+    answer: 0
+  },
+  {
+    q: "Select the option that expresses the given sentence in indirect voice.\nThe manager said, “We will make a decision by Friday.”",
+    options: [
+      "The manager said that they would make a decision by Friday.",
+      "The manager said that we would make a decision by Friday.",
+      "The manager said that they will make a decision by Friday.",
+      "The manager said that we will make a decision by Friday."
+    ],
+    answer: 0
+  },
+  {
+    q: "Choose the most suitable option to replace the highlighted part.\nTwenty minutes has been the time I need to get ready for the party.",
+    options: [
+      "Twenty minutes are the time",
+      "Twenty minutes is the time",
+      "Twenty minute is the time",
+      "Twenty minutes are the time needed"
+    ],
+    answer: 1
+  },
+  {
+    q: "Choose the correct passive voice transformation.\nYou should have kept us informed about the progress of the investigation.",
+    options: [
+      "We should be kept informed about the progress of the investigation by you.",
+      "We should have been kept informed about the progress of the investigation by you.",
+      "We should have been keeping informed about the progress of the investigation by you.",
+      "We should have kept informed about the progress of the investigation by you."
+    ],
+    answer: 1
+  },
+  {
+    q: "Select the option that expresses the given sentence in direct voice.\nThe manager told the team that their hard work and dedication had been noticed and appreciated.",
+    options: [
+      "The manager said, “Your hard work and dedication had been noticed and appreciated.”",
+      "The manager said, “Your hard work and dedication have been noticed and appreciated.”",
+      "The manager told the team, “Their hard work and dedication had been noticed and appreciated.”",
+      "The manager said, “Their hard work and dedication were noticed and appreciated.”"
+    ],
+    answer: 1
+  },
+  {
+    q: "Rearrange the following sentences to form a meaningful paragraph.\nP. She created a decadent batter and baked three layers of cake flawlessly.\nQ. The finished cake was a stunning design, prepared for the celebration and the candles.\nR. She coated the outside of the entire cake after stacking the layers with icing between them.\nS. Before gently levelling each cake layer, she created a light and creamy icing.",
+    options: ["S, P, R, Q", "P, S, R, Q", "Q, S, R, P", "R, S, P, Q"],
+    answer: 1
+  }
+];
+// State    
+let currentIndex = 0;    
+let answers = new Array(QUESTIONS.length).fill(null);     
+let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+let timeLeft = TOTAL_TIME;    
+let timerId = null;    
+let submitted = false;    
+let isPaused = false;    
+let reviewMode = false; // true when user is viewing a single question from analysis    
+const app = document.getElementById("app");    
+
+function formatTime(sec){ 
+  const m = Math.floor(sec/60), s = sec%60; 
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; 
+}    
+
+function getStats(){    
+  const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+  QUESTIONS.forEach((q,i)=>{    
+    const a = answers[i];    
+    if (a !== null){    
+      s.attempted++;    
+      if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+      else { s.wrong++; s.marks += MARKS_WRONG; }    
+    }    
+  });    
+  return s;    
+}    
+
+function renderQuestion(){    
+  if (reviewMode) isPaused = true;    
+  if (submitted && !reviewMode){ renderResult(); return; }    
+
+  const q = QUESTIONS[currentIndex];    
+  const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+  const selected = answers[currentIndex];    
+
+  const stripHtml = QUESTIONS.map((_,idx)=>{    
+    let cls = "qchip";    
+    if (idx===currentIndex) cls += " current";    
+    if (answers[idx] !== null) cls += " answered";    
+    if (reviewed[idx]) cls += " reviewed";    
+    return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+  }).join("");    
+
+  app.innerHTML = `    
+    <div class="header">    
+      <div class="title">English Sectional Mock</div>    
+      <div class="timer-wrap">    
+        <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+        <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+      </div>    
+    </div>    
+
+    <div class="subheader">    
+      <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+      <span class="badge">English</span>    
+    </div>    
+
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width:${progressPercent}%"></div>
+    </div>    
+
+    <div class="q-strip">
+      <div class="q-strip-inner">${stripHtml}</div>
+    </div>    
+
+    <div class="section-tag">English</div>    
+
+    <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+
+    <div class="options">    
+      ${q.options.map((opt,idx)=>{    
+        let classes = "";    
+        if (selected === idx && !reviewMode) classes = "selected";    
+        if (reviewMode){    
+          if (idx === q.answer) classes = "correct";    
+          else if (selected === idx && selected !== q.answer) classes = "wrong";    
+        } else {    
+          if (selected === idx) classes = "selected";    
+        }    
+        return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+      }).join("")}    
+    </div>    
+
+    <div class="footer">    
+      <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+      <div class="nav-buttons">    
+        <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+        ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+        <button class="nav-btn" id="markBtn">Mark</button>    
+        <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+      </div>    
+    </div>    
+  `;    
+
+  document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+    if (reviewMode){ isPaused = true; renderQuestion(); return; }    
+    isPaused = !isPaused;    
+    renderQuestion();    
+  });    
+
+  document.querySelectorAll(".qchip").forEach(b=>{    
+    b.addEventListener("click", ()=>{ 
+      currentIndex = Number(b.dataset.q); 
+      reviewMode = false; 
+      renderQuestion(); 
+    });    
+  });    
+
+  document.querySelectorAll(".option-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.index);    
+      if (reviewMode) return;    
+      answers[currentIndex] = idx;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{    
+    if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+  });    
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{    
+    if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+    else { submitted = true; reviewMode = false; renderResult(); }    
+  });    
+
+  const markBtnEl = document.getElementById('markBtn');    
+  if (markBtnEl){    
+    markBtnEl.addEventListener('click', ()=>{    
+      reviewed[currentIndex] = !reviewed[currentIndex];    
+      markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+      renderQuestion();    
+    });    
+  }    
+
+  const back = document.getElementById("backAnalysis");    
+  if (back){    
+    back.addEventListener("click", ()=>{    
+      reviewMode = false;    
+      submitted = true;    
+      renderResult();    
+    });    
+  }    
+}    
+
+function renderResult(){    
+  if (timerId){ clearInterval(timerId); timerId = null; }    
+  const s = getStats();    
+  const maxMarks = s.total * MARKS_CORRECT;    
+  const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+  let remark = percentage>=80 ? "Excellent! 💯"
+             : percentage>=60 ? "Good! 👍"
+             : percentage>=40 ? "Average. Can improve 🙂"
+             : "Needs more practice 💪";    
+
+  let qaHtml = "";    
+  QUESTIONS.forEach((q,i)=>{    
+    const user = answers[i];    
+    const correctIdx = q.answer;    
+    const isSkipped = user === null;    
+    const isCorrect = !isSkipped && user === correctIdx;    
+    const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` 
+               : isCorrect ? `<span class="pill-green">Correct</span>` 
+               : `<span class="pill-red">Wrong</span>`;    
+
+    const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+    const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+
+    qaHtml += `    
+      <div class="qa-card" id="qa-${i}">    
+        <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+        <div class="qa-answer-row">    
+          <div><span class="label">Your answer:</span> ${userText}</div>    
+          <div><span class="label">Correct answer:</span> ${correctText}</div>    
+          <div style="margin-left:auto">${pill}</div>    
+        </div>    
+        <div style="margin-top:8px;text-align:right">    
+          <button class="review-btn" data-q="${i}">Review Q</button>    
+        </div>    
+      </div>    
+    `;    
+  });    
+
+  app.innerHTML = `    
+    <div class="result">    
+      <h2>English Section Analysis</h2>    
+      <div class="tiny">9-minute sectional mock completed</div>    
+
+      <div class="card">    
+        <div class="card-title">Overall Performance</div>    
+        <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+        <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+        <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+        <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+        <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+        <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+        <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+      </div>    
+
+      <div style="margin-top:8px;margin-bottom:8px">    
+        <div class="card-title">Question-wise Review</div>    
+        ${qaHtml}    
+      </div>    
+
+      <button class="restart-btn" id="restartBtn">Retake Section</button>    
+      <div class="tiny">Timer will restart from 9 minutes</div>    
+    </div>    
+  `;    
+
+  document.querySelectorAll(".review-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.q);    
+      currentIndex = idx;    
+      reviewMode = true;    
+      submitted = false;    
+      isPaused = true;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("restartBtn").addEventListener("click", ()=>{    
+    currentIndex = 0;    
+    answers = new Array(QUESTIONS.length).fill(null);    
+    timeLeft = TOTAL_TIME;    
+    submitted = false;    
+    isPaused = false;    
+    reviewMode = false;    
+    startTimer();    
+    renderQuestion();    
+  });    
+}    
+
+function startTimer(){    
+  if (timerId) clearInterval(timerId);    
+  timerId = setInterval(()=>{    
+    if (!isPaused && !submitted && !reviewMode){    
+      timeLeft--;    
+      if (timeLeft <= 0){    
+        submitted = true;    
+        reviewMode = false;    
+        renderResult();    
+        return;    
+      }    
+    }    
+    const el = document.querySelector(".timer");    
+    if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+  }, 1000);    
+}    
+
+startTimer();    
+renderQuestion();
+</script>  </body>    </html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHSL Maths Sectional Mock (25Q)</title>
+
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:14px}
+.container{max-width:520px;width:100%;background:#fff;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08);padding:18px}
+
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.title{font-size:17px;font-weight:600}
+.timer{background:#111827;color:#fff;padding:5px 12px;border-radius:999px;font-size:13px}
+
+.sub{font-size:12px;color:#6b7280;margin-bottom:8px;display:flex;justify-content:space-between}
+.badge{background:#e5e7eb;border-radius:999px;padding:2px 8px}
+
+.q-strip{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.q-strip::-webkit-scrollbar{display:none}
+.qchip{min-width:26px;height:26px;border-radius:50%;border:1px solid #d1d5db;font-size:11px;background:#f9fafb}
+.qchip.current{background:#111827;color:#fff}
+.qchip.answered{background:#dbeafe;color:#1d4ed8}
+.qchip.reviewed{background:rebeccapurple;color:#fff}
+
+.question{font-size:15px;margin-bottom:10px;white-space:pre-line}
+.options{display:grid;gap:8px}
+.option{border:1px solid #d1d5db;border-radius:999px;padding:9px 14px;text-align:left;font-size:14px;background:#fff}
+.option.selected{background:#2563eb;color:#fff}
+.option.correct{background:#dcfce7;color:#166534}
+.option.wrong{background:#fee2e2;color:#b91c1c}
+
+.footer{margin-top:14px;display:flex;gap:6px}
+.btn{border:none;border-radius:999px;padding:9px 12px;font-size:13px}
+.btn.gray{background:#e5e7eb}
+.btn.dark{background:#111827;color:#fff;flex:1}
+.back-btn{background:#6b7280;color:#fff}
+
+.result h2{text-align:center}
+.card{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:8px}
+.qa{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:6px}
+.pill{border-radius:999px;padding:3px 8px;font-size:12px}
+.green{background:#dcfce7}
+.red{background:#fee2e2}
+.gray{background:#e5e7eb}
+
+.review-btn{margin-left:auto;background:#111827;color:#fff;border:none;border-radius:999px;padding:5px 10px;font-size:12px}
+.restart{width:100%;margin-top:10px;padding:10px;border:none;border-radius:999px;background:#2563eb;color:#fff}
+</style>
+</head>
+
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const TOTAL_TIME = 25*60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+
+/* ===== EXACT QUESTIONS – WORD FOR WORD ===== */
+const QUESTIONS = [
+{
+q:`P, Q, and R started a business. P is the working partner and receives a monthly salary of $2,000 from the total profit. The remaining profit is distributed among all three in the ratio of their investments. P, Q, and R invested $50,000, $60,000, and $70,000 respectively. If, at the end of the year, P’s total earning was $40,000, what was the total profit?`,
+options:["$84,000","$96,000","$81,600","$72,000"],
+answer:2
+},
+{
+q:`If cos A = 5/13 and sin B = 12/13, find sin A cos B + cos A sin B.`,
+options:["120/169","13/169","12/169","7/13"],
+answer:0
+},
+{
+q:`If equal quantities of two types of sugar are mixed, where the first is sold for ₹40/kg at a 25% profit, and the second is sold for ₹30/kg at a 25% loss. If the mixture is sold at ₹36/kg, what is the loss or gain percentage?`,
+options:["5% gain","10% gain","0% gain/loss","10% loss"],
+answer:2
+},
+{
+q:`The amount at the end of the 2nd and 3rd years on a certain principal at CI is ₹4,232 and ₹4,655.20 respectively. Find the rate of interest per annum.`,
+options:["12%","15%","8%","10%"],
+answer:3
+},
+{
+q:`The sum of three numbers is 180. If the ratio of the first to second is 3 : 5, and the ratio of the second to third is 4 : 7, then the second number is:`,
+options:["40.8","53.73","63.12","72.05"],
+answer:1
+},
+{
+q:`In a group of 7 students, 4 boys and 3 girls spent an average of ₹120 each. If the average spending of the boys was ₹150, what was the average spending of the girls?`,
+options:["₹70","₹90","₹80","₹100"],
+answer:2
+},
+{
+q:`A rectangular courtyard of 3.78 meters by 5.25 meters is to be paved with square tiles, all of the same size. What is the largest size of the tile which could be used for this purpose?`,
+options:["14 cm","21 cm","42 cm","56 cm"],
+answer:1
+},
+{
+q:`A machine is purchased for ₹80,000. Its value depreciates at the rate of 10% per year. What will be its value after 3 years?`,
+options:["₹57,600","₹58,320","₹59,000","₹59,200"],
+answer:1
+},
+{
+q:`A alone can do a job in 12 days, B alone in 24 days. They work together for 4 days, then A leaves. In how many more days will B finish the job?`,
+options:["12 days","7 days","8 days","9 days"],
+answer:0
+},
+{
+q:`A retailer marks his goods at 40% above the cost price and allows a 15% discount. What is his profit percentage?`,
+options:["20%","19%","25%","22%"],
+answer:1
+},
+{
+q:`An investor divides a total of $25,000 into two different accounts. Account A earns simple interest at a rate of 4% per year, and Account B earns simple interest at a rate of 6.5% per year. After three years, the total interest earned from both accounts is $3,975. What is the amount of money invested in Account A?`,
+options:["$13,000","$10,000","$15,000","$12,000"],
+answer:3
+},
+{
+q:`If x + y + z = 16 and xy + yz + zx = 75, what is the value of x² + y² + z²?`,
+options:["106","121","156","108"],
+answer:0
+},
+{
+q:`Find the smallest perfect square that is divisible by both 16 and 36.`,
+options:["144","576","900","1024"],
+answer:0
+},
+{
+q:`A container holds 80 liters of a mixture of acid and water in the ratio 7 : 9. If 8 liters of acid is added to the container, what will be the new ratio of acid to water?`,
+options:["8 : 9","43 : 45","7 : 10","43 : 53"],
+answer:1
+},
+{
+q:`A circle is inscribed in a square. The side of the square is 14 cm. What is the area of the circle?`,
+options:["563.84 cm²","253.56 cm²","897.54 cm²","153.94 cm²"],
+answer:3
+},
+{
+q:`A solid metal sphere is melted and recast into a cylinder, where the radius of the cylinder is twice that of the sphere. If the height of the cylinder is h and the radius of the sphere is r, what is the ratio of h to r?`,
+options:["2 : 3","1 : 3","3 : 2","3 : 1"],
+answer:1
+},
+{
+q:`The total surface area of a solid hemisphere is numerically equal to the volume of a sphere of the same radius. What is the radius?`,
+options:["2.25 units","4 units","5 units","3 units"],
+answer:0
+},
+{
+q:`A certain fraction has a denominator that is 5 more than its numerator. If 3 is added to both the numerator and the denominator, the new fraction is equivalent to 2/3. What was the original fraction?`,
+options:["8/13","6/11","7/12","1/10"],
+answer:2
+},
+{
+q:`If b − 1/b = 3, then calculate the value of b⁶ + 1/b⁶.`,
+options:["1298","1345","1987","1678"],
+answer:0
+},
+{
+q:`Simplify:
+(√45 + √20) / √5`,
+options:["1","0","5","12"],
+answer:2
+},
+{
+q:`Simplify the expression:
+(cos²x − sin²x) / (1 − sin²x)`,
+options:["tan²x","1","1 − tan²x","1 − tan2x"],
+answer:2
+},
+{
+q:`If sin 2A = 3/5, what is cos 2A?`,
+options:["4/5","5/6","6/7","7/8"],
+answer:0
+},
+{
+q:`If sin²A + cos²A = 1 and tan A = 2, find sin A and cos A.`,
+options:[
+"sin A = 2/√5, cos A = 1/√5",
+"sin A = 1/√5, cos A = 2/√5",
+"sin A = 2/5, cos A = 3/5",
+"sin A = 5/6, cos A = 6/7"
+],
+answer:0
+},
+{
+q:`A line passes through the points (x, 2) and (3, −4) and has a slope of 2. What is the value of x?`,
+options:["2","8","6","4"],
+answer:2
+},
+{
+q:`A man can walk up a moving-up escalator in 30 seconds. The same man can walk down the same moving-up escalator in 90 seconds. How long would it take him to walk up the escalator when it is not moving?`,
+options:["45 seconds","75 seconds","60 seconds","40 seconds"],
+answer:0
+}
+];
+
+/* ===== SCRIPT BELOW UNCHANGED ===== */
+
+let index=0,answers=new Array(25).fill(null),
+reviewed=new Array(25).fill(false),
+timeLeft=TOTAL_TIME,submitted=false,reviewMode=false,timer,stripScroll=0;
+
+const app=document.getElementById("app");
+
+function startTimer(){
+ timer=setInterval(()=>{
+  if(!submitted && !reviewMode){
+   timeLeft--;
+   if(timeLeft<=0){submitted=true;renderResult();}
+   render();
+  }
+ },1000);
+}
+
+function render(){
+ if(submitted && !reviewMode){renderResult();return;}
+ const old=document.querySelector(".q-strip");
+ if(old) stripScroll=old.scrollLeft;
+
+ const q=QUESTIONS[index];
+ app.innerHTML=`
+ <div class="header">
+  <div class="title">Maths Sectional Mock</div>
+  <div class="timer">⏱ ${Math.floor(timeLeft/60)}:${String(timeLeft%60).padStart(2,"0")}</div>
+ </div>
+
+ <div class="sub">
+  <span>+2 / −0.5</span>
+  <span class="badge">Mathematics</span>
+ </div>
+
+ <div class="q-strip">
+ ${QUESTIONS.map((_,i)=>`<button class="qchip ${i===index?"current":""} ${answers[i]!=null?"answered":""} ${reviewed[i]?"reviewed":""}" onclick="jump(${i})">${i+1}</button>`).join("")}
+ </div>
+
+ <div class="question">Q${index+1}. ${q.q}</div>
+
+ <div class="options">
+ ${q.options.map((o,i)=>{
+   let cls="";
+   if(reviewMode){
+     if(i===q.answer) cls="correct";
+     else if(answers[index]===i) cls="wrong";
+   } else if(answers[index]===i) cls="selected";
+   return `<button class="option ${cls}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+ }).join("")}
+ </div>
+
+ <div class="footer">
+  <button class="btn gray" onclick="prev()">Prev</button>
+  ${reviewMode?`<button class="btn back-btn" onclick="backToAnalysis()">Back</button>`:`<button class="btn gray" onclick="mark()">Mark</button>`}
+  <button class="btn dark" onclick="next()">${index+1===25?"Submit":"Next"}</button>
+ </div>`;
+
+ const nw=document.querySelector(".q-strip");
+ if(nw) nw.scrollLeft=stripScroll;
+}
+
+function selectOpt(i){answers[index]=i;render();}
+function prev(){if(index>0)index--;render();}
+function next(){if(index<24)index++;else submitted=true;render();}
+function mark(){reviewed[index]=!reviewed[index];render();}
+function jump(i){index=i;render();}
+
+function renderResult(){
+ clearInterval(timer);
+ let a=0,c=0,w=0,m=0;
+ QUESTIONS.forEach((q,i)=>{
+  if(answers[i]!=null){
+   a++;
+   if(answers[i]===q.answer){c++;m+=MARKS_CORRECT;}
+   else{w++;m+=MARKS_WRONG;}
+  }
+ });
+ let pct=Math.round((m/50)*100);
+ let remark=pct>=80?"Excellent":pct>=60?"Good":pct>=40?"Average":"Needs Practice";
+
+ app.innerHTML=`
+ <div class="result">
+  <h2>Overall Performance</h2>
+  <div class="card">
+   <div>Total: 25</div>
+   <div>Attempted: ${a}</div>
+   <div>Correct: ${c}</div>
+   <div>Wrong: ${w}</div>
+   <div>Marks: ${m}/50</div>
+   <div>Remark: ${remark}</div>
+  </div>
+
+  <h3>Question-wise Analysis</h3>
+  ${QUESTIONS.map((q,i)=>{
+   let ua=answers[i];
+   let pill=ua==null?"gray":ua===q.answer?"green":"red";
+   return `<div class="qa">
+    <b>Q${i+1}.</b> ${q.q}<br><br>
+    <span class="pill ${pill}">Your: ${ua==null?"Skipped":String.fromCharCode(65+ua)}</span>
+    <span class="pill green">Correct: ${String.fromCharCode(65+q.answer)}</span>
+    <button class="review-btn" onclick="reviewQuestion(${i})">Review Q</button>
+   </div>`;
+  }).join("")}
+
+  <button class="restart" onclick="location.reload()">Retake Section</button>
+ </div>`;
+}
+
+function reviewQuestion(i){index=i;reviewMode=true;render();}
+function backToAnalysis(){reviewMode=false;renderResult();}
+
+startTimer();
+render();
+</script>
+</body>
+</html>

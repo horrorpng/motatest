@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>GK Sectional Mock – GK_mock(34).html</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer;transition:background .15s,border-color .15s,transform .05s}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8;transform:translateY(-1px)}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer;white-space:nowrap}
+    .nav-btn{background:#e5e7eb;color:#111827}
+    .next-btn{flex:1;background:#111827;color:#fff;font-weight:500}
+    .nav-btn:disabled{opacity:.6;cursor:default}
+    .question-count{font-size:12px;color:#6b7280}
+    .result{padding:8px 4px}
+    .result h2{font-size:20px;margin-bottom:6px;text-align:center}
+    .card{border-radius:12px;padding:10px 12px;background:#f9fafb;border:1px solid #e5e7eb;margin-bottom:8px}
+    .card-title{font-size:13px;font-weight:600;margin-bottom:4px}
+    .stat-row{display:flex;justify-content:space-between;font-size:12px;margin-top:2px}
+    .pill-green{background:#dcfce7;color:#166534;padding:3px 8px;border-radius:999px;font-size:12px}
+    .pill-red{background:#fee2e2;color:#b91c1c;padding:3px 8px;border-radius:999px;font-size:12px}
+    .pill-gray{background:#e5e7eb;color:#374151;padding:3px 8px;border-radius:999px;font-size:12px}
+    .qa-card{border-radius:12px;padding:10px 12px;background:#fff;border:1px solid #e5e7eb;margin-bottom:8px}
+    .qa-question{font-size:13px;margin-bottom:6px;white-space:pre-line}
+    .qa-answer-row{font-size:13px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .label{font-weight:600}
+    .tiny{text-align:center;font-size:11px;color:#6b7280;margin-top:4px}
+    .restart-btn{margin-top:10px;border-radius:999px;border:none;padding:9px 14px;background:#2563eb;color:#fff;font-size:14px;cursor:pointer;width:100%}
+    .review-btn{border-radius:8px;padding:6px 8px;border:none;background:#111827;color:#fff;cursor:pointer;font-size:12px}
+    .back-btn{border-radius:8px;padding:6px 8px;border:none;background:#6b7280;color:#fff;font-size:12px;margin-left:8px}
+    @media (max-width:420px){.container{padding:14px}}
+/* Mark-for-review (purple) */
+.qchip.reviewed { background: rebeccapurple !important; color: #fff !important; border-color: rebeccapurple !important; }
+button#markBtn.marked { background: rebeccapurple; color: #fff; border-color: rebeccapurple; }
+  </style>
+</head>
+<body>
+  <div class="container" id="app"></div>
+
+  <script>
+    // Config
+    const TOTAL_TIME = 9 * 60; // 9 minutes
+    const MARKS_CORRECT = 2;
+    const MARKS_WRONG = -0.5;
+
+    // Questions (GK mock 34)
+const QUESTIONS = [
+{ q:`Which of the following tribe was very influential in Punjab during the thirteenth and fourteenth century?`, options:[`The Khokhar`, `The Gond`, `The Santhal`, `The Bhil`], answer:0 },
+{ q:`Which of the following pairs is correct regarding the campaign years of Akbar at various places?
+I. Rajasthan – 1569
+II. Gujarat – 1572`, options:[`Only I`, `Only II`, `Both I and II`, `Neither I nor II`], answer:2 },
+{ q:`Who was the first Indian actress to win an international award at the 1963 Moscow International Film Festival?`, options:[`Nargis Dutt`, `Suchitra Sen`, `Zeenat Aman`, `Jaya Prada`], answer:1 },
+{ q:`Who was the first Indian to be awarded the Nobel Prize?`, options:[`Amartya Sen`, `Kailash Satyarthi`, `Rabindranath Tagore`, `Subramanian Chandrashekar`], answer:2 },
+{ q:`Swavalambini that was launched in March 2025 is a ______.`, options:[`Women Entrepreneurship Programme`, `Financial Literacy Campaign`, `Digital Inclusion Project`, `Childcare Support Initiative`], answer:0 },
+{ q:`In 2025, PM SVANidhi was enhanced with UPI-linked credit cards for street vendors. Which Ministry oversees this?`, options:[`Ministry of Finance`, `Ministry of Housing & Urban Affairs`, `Ministry of Commerce & Industry`, `Ministry of MSME`], answer:1 },
+{ q:`In World Press Freedom Index 2025, which of the following countries is worst performer?`, options:[`Eritrea`, `Pakistan`, `Sudan`, `Nepal`], answer:0 },
+{ q:`What is India’s cumulative solar power capacity (in GW) as of July 2025?`, options:[`50`, `67.75`, `119.02`, `175`], answer:2 },
+{ q:`Who is the author of the book “Speedpost”, a collection of personal letters to her children?`, options:[`Kiran Desai`, `Shobhaa De`, `Jhumpa Lahiri`, `Arundhati Roy`], answer:1 },
+{ q:`Which of the following period is known as the “Golden age” of Indian temple architecture?`, options:[`Gupta Period`, `Maurya Period`, `Delhi Sultanate Period`, `Mughal Period`], answer:0 },
+{ q:`Which of the following is a popular dance of Himachal Pradesh?`, options:[`Fugdi`, `Sattriya`, `Jhumar`, `Shand and Shabu`], answer:3 },
+{ q:`Within ______ years from the Big Bang, temperature dropped to 4500K and gave rise to atomic matter.`, options:[`300000`, `3000`, `30000`, `300`], answer:0 },
+{ q:`In January 2025, which country developed the world’s most powerful hydrogen train engine?`, options:[`India`, `Germany`, `Japan`, `France`], answer:1 },
+{ q:`The object covers unequal distances in equal intervals of time; it is said to be in ______ motion.`, options:[`Uniform`, `Linear`, `Non-uniform`, `Circular`], answer:2 },
+{ q:`Which of the following battles was fought in 1761?`, options:[`Third Battle of Panipat`, `First Battle of Panipat`, `Second Battle of Tarain`, `First Battle of Tarain`], answer:0 },
+{ q:`In the context of Budget, salaries, pensions, defence services come under ______.`, options:[`Revenue expenditure`, `Revenue receipts`, `Capital receipts`, `Capital expenditure`], answer:0 },
+{ q:`The Deepak Parekh committee to look into affordable housing was set up in which year?`, options:[`2008`, `2001`, `2005`, `2011`], answer:0 },
+{ q:`The Hirakud Dam project is built across ______ river.`, options:[`Periyar`, `Krishna`, `Mahanadi`, `Indus`], answer:2 },
+{ q:`Which of the following states is rich in sandstone, granite and marble?`, options:[`Kerala`, `Andhra Pradesh`, `Odisha`, `Rajasthan`], answer:3 },
+{ q:`What was the literacy rate of India as per census 1951?`, options:[`18.33%`, `28.33%`, `10.33%`, `9.33%`], answer:0 },
+{ q:`Which of the following is a sub-field of social geography?
+I. Gender Geography
+II. Cultural Geography`, options:[`Only I`, `Only II`, `Both I and II`, `Neither I nor II`], answer:2 },
+{ q:`FRBM Act 2003 mandates the central government to reduce fiscal deficit to not more than ______ of GDP.`, options:[`1%`, `2%`, `3%`, `8%`], answer:2 },
+{ q:`What role do cellular vacuoles play in plant waste management?`, options:[`Facilitate nutrient absorption`, `Store waste products`, `Assist in photosynthesis`, `Help in water transportation`], answer:1 },
+{ q:`Under matrimonial alliances, Bimbisara married the sister of which king of Kosala?`, options:[`Chetak`, `Ajatashatru`, `Prasenjit`, `Brahmadatta`], answer:2 },
+{ q:`Gautamiputra Satakarni is regarded as the greatest among which dynasty’s rulers?`, options:[`Gupta rulers`, `Maurya rulers`, `Chola rulers`, `Satavahana rulers`], answer:3 }
+];
+
+    // State
+    let currentIndex = 0;
+    let answers = new Array(QUESTIONS.length).fill(null); 
+    let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags
+    let timeLeft = TOTAL_TIME;
+    let timerId = null;
+    let submitted = false;
+    let isPaused = false;
+    let reviewMode = false; // true when user is viewing a single question from analysis
+    const app = document.getElementById("app");
+
+    function formatTime(sec){ const m = Math.floor(sec/60), s = sec%60; return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; }
+
+    function getStats(){
+      const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };
+      QUESTIONS.forEach((q,i)=>{
+        const a = answers[i];
+        if (a !== null){
+          s.attempted++;
+          if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }
+          else { s.wrong++; s.marks += MARKS_WRONG; }
+        }
+      });
+      return s;
+    }
+
+    function renderQuestion(){
+      // If user is in reviewMode, keep isPaused true
+      if (reviewMode) isPaused = true;
+
+      if (submitted && !reviewMode){ renderResult(); return; }
+
+      const q = QUESTIONS[currentIndex];
+      const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;
+      const selected = answers[currentIndex];
+
+      const stripHtml = QUESTIONS.map((_,idx)=>{
+        let cls = "qchip";
+        if (idx===currentIndex) cls += " current";
+        if (answers[idx] !== null) cls += " answered";
+        if (reviewed[idx]) cls += " reviewed";
+        return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;
+      }).join("");
+
+      app.innerHTML = `
+        <div class="header">
+          <div class="title">GK Sectional Mock – GK_mock(34).html</div>
+          <div class="timer-wrap">
+            <div class="timer">⏱ ${formatTime(timeLeft)}</div>
+            <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>
+          </div>
+        </div>
+
+        <div class="subheader">
+          <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>
+          <span class="badge">General Knowledge</span>
+        </div>
+
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progressPercent}%"></div></div>
+
+        <div class="q-strip"><div class="q-strip-inner">${stripHtml}</div></div>
+
+        <div class="section-tag">General Knowledge</div>
+
+        <div class="question-text">Q${currentIndex+1}. ${q.q}</div>
+
+        <div class="options">
+          ${q.options.map((opt,idx)=>{
+            // Determine classes for review highlighting:
+            let classes = "";
+            if (selected === idx && !reviewMode) classes = "selected";
+            if (reviewMode){
+              if (idx === q.answer) classes = "correct";
+              else if (selected === idx && selected !== q.answer) classes = "wrong";
+            } else {
+              if (selected === idx) classes = "selected";
+            }
+            return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;
+          }).join("")}
+        </div>
+
+        <div class="footer">
+          <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>
+          <div class="nav-buttons">
+            <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>
+            ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }
+            <button class="nav-btn" id="markBtn">Mark</button>
+            <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>
+          </div>
+        </div>
+      `;
+
+      // events
+      document.getElementById("pauseBtn").addEventListener("click", ()=>{
+        if (reviewMode){
+          isPaused = true;
+          renderQuestion();
+          return;
+        }
+        isPaused = !isPaused;
+        renderQuestion();
+      });
+
+      document.querySelectorAll(".qchip").forEach(b=>{
+        b.addEventListener("click", ()=>{ currentIndex = Number(b.dataset.q); reviewMode = false; renderQuestion(); });
+      });
+
+      document.querySelectorAll(".option-btn").forEach(b=>{
+        b.addEventListener("click", ()=>{
+          const idx = Number(b.dataset.index);
+          if (reviewMode){
+            return;
+          }
+          answers[currentIndex] = idx;
+          renderQuestion();
+        });
+      });
+
+      document.getElementById("prevBtn").addEventListener("click", ()=>{
+        if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }
+      });
+
+      document.getElementById("nextBtn").addEventListener("click", ()=>{
+        if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }
+        else { // submit
+          submitted = true;
+          reviewMode = false;
+          renderResult();
+        }
+      });
+      // mark button handler (toggle review state)
+      const markBtnEl = document.getElementById('markBtn');
+      if (markBtnEl) {
+        markBtnEl.addEventListener('click', ()=>{
+          reviewed[currentIndex] = !reviewed[currentIndex];
+          markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';
+          // re-render question to update strip & button styles
+          renderQuestion();
+        });
+      }
+
+      const back = document.getElementById("backAnalysis");
+      if (back){
+        back.addEventListener("click", ()=>{
+          reviewMode = false;
+          submitted = true; // show analysis again
+          renderResult();
+        });
+      }
+    }
+
+    function renderResult(){
+      if (timerId){ clearInterval(timerId); timerId = null; } // stop timer on result screen
+      const s = getStats();
+      const maxMarks = s.total * MARKS_CORRECT;
+      const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;
+      let remark = percentage>=80 ? "Excellent! 💯": percentage>=60 ? "Good! 👍": percentage>=40 ? "Average. Can improve 🙂" : "Needs more practice 💪";
+
+      // build QA review HTML
+      let qaHtml = "";
+      QUESTIONS.forEach((q,i)=>{
+        const user = answers[i];
+        const correctIdx = q.answer;
+        const isSkipped = user === null;
+        const isCorrect = !isSkipped && user === correctIdx;
+        const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` : isCorrect ? `<span class="pill-green">Correct</span>` : `<span class="pill-red">Wrong</span>`;
+        const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;
+        const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;
+        qaHtml += `
+          <div class="qa-card" id="qa-${i}">
+            <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>
+            <div class="qa-answer-row">
+              <div><span class="label">Your answer:</span> ${userText}</div>
+              <div><span class="label">Correct answer:</span> ${correctText}</div>
+              <div style="margin-left:auto">${pill}</div>
+            </div>
+            <div style="margin-top:8px;text-align:right">
+              <button class="review-btn" data-q="${i}">Review Q</button>
+            </div>
+          </div>
+        `;
+      });
+
+      app.innerHTML = `
+        <div class="result">
+          <h2>GK Section Analysis – GK_mock(34).html</h2>
+          <div class="tiny">9-minute sectional mock completed</div>
+
+          <div class="card">
+            <div class="card-title">Overall Performance</div>
+            <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>
+            <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>
+            <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>
+            <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>
+            <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>
+            <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>
+            <div class="stat-row"><span>Remark</span><span>${remark}</span></div>
+          </div>
+
+          <div style="margin-top:8px;margin-bottom:8px">
+            <div class="card-title">Question-wise Review</div>
+            ${qaHtml}
+          </div>
+
+          <button class="restart-btn" id="restartBtn">Retake Section</button>
+          <div class="tiny">Timer will restart from 9 minutes</div>
+        </div>
+      `;
+
+      // attach review buttons
+      document.querySelectorAll(".review-btn").forEach(b=>{
+        b.addEventListener("click", ()=>{
+          const idx = Number(b.dataset.q);
+          // jump back into test view at that question in review mode (pause timer)
+          currentIndex = idx;
+          reviewMode = true;
+          submitted = false; // go back to question view
+          isPaused = true; // ensure timer paused while reviewing questions
+          renderQuestion();
+        });
+      });
+
+      document.getElementById("restartBtn").addEventListener("click", ()=>{
+        // reset and start again
+        currentIndex = 0;
+        answers = new Array(QUESTIONS.length).fill(null);
+        timeLeft = TOTAL_TIME;
+        submitted = false;
+        isPaused = false;
+        reviewMode = false;
+        startTimer();
+        renderQuestion();
+      });
+    }
+
+    function startTimer(){
+      if (timerId) clearInterval(timerId);
+      timerId = setInterval(()=>{
+        if (!isPaused && !submitted && !reviewMode){
+          timeLeft--;
+          if (timeLeft <= 0){
+            submitted = true;
+            reviewMode = false;
+            renderResult();
+            return;
+          }
+          const el = document.querySelector(".timer");
+          if (el) el.textContent = "⏱ " + formatTime(timeLeft);
+        } else {
+          const el = document.querySelector(".timer");
+          if (el) el.textContent = "⏱ " + formatTime(timeLeft);
+        }
+      }, 1000);
+    }
+
+    // initial run
+    startTimer();
+    renderQuestion();
+  </script>
+</body>
+</html>

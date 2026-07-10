@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>GK Sectional Mock – Set 3 (Review v2)</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const TOTAL_TIME = 13 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+  {
+    q: "Nayanars saints were devoted to which of the following?",
+    options: ["Shiva", "Durga", "Agni", "Indra"],
+    answer: 0
+  },
+  {
+    q: "Which article of the Indian Constitution mentions that there shall be a Comptroller and Auditor-General of India?",
+    options: ["Article 142", "Article 144", "Article 146", "Article 148"],
+    answer: 3
+  },
+  {
+    q: "Which section of the Indian Constitution ensures social and economic reforms in a country?",
+    options: [
+      "Fundamental Rights",
+      "Fundamental Duties",
+      "Separation of Powers",
+      "Directive Principles of State Policy"
+    ],
+    answer: 3
+  },
+  {
+    q: "In July 2025, the 17th BRICS Summit was held in which of the following countries?",
+    options: ["South Africa", "Russia", "India", "Brazil"],
+    answer: 3
+  },
+  {
+    q: "The Asian Development Bank was founded in ____.",
+    options: ["1952", "1966", "1977", "1987"],
+    answer: 1
+  },
+  {
+    q: "In July 2025, ____ was arrested in connection with the Andaman and Nicobar State Cooperative Bank Limited (ANSCBL) loan irregularities case.",
+    options: ["Ashwani Gupta", "Kuldeep Sharma", "Shashi Singh", "Samir Shah"],
+    answer: 1
+  },
+  {
+    q: "In April 2025, Union Minister of Commerce & Industry Shri Piyush Goyal announced that the Second Fund of Funds for Startups worth Rs. ____ crore was approved.",
+    options: ["10,000", "5,000", "8,000", "3,000"],
+    answer: 0
+  },
+  {
+    q: "In the Union Budget 2025–26, there has been a plan to establish ____ Day Care Cancer Centres in 2025–26.",
+    options: ["200", "500", "350", "750"],
+    answer: 3
+  },
+  {
+    q: "National Infrastructure Readiness Index (NIRI) was launched in ____.",
+    options: ["September 2024", "April 2024", "August 2025", "January 2025"],
+    answer: 0
+  },
+  {
+    q: "First Asian Games were held at ____.",
+    options: ["New Delhi", "Tokyo", "Beijing", "Jakarta"],
+    answer: 0
+  },
+  {
+    q: "Who was the first female teacher of India who founded the first girls’ school?",
+    options: [
+      "Annie Besant",
+      "Kasturba Gandhi",
+      "Sarojini Naidu",
+      "Savitribai Jyotiba Phule"
+    ],
+    answer: 3
+  },
+  {
+    q: "Who was the first Indian to become WHO’s Deputy Director General?",
+    options: [
+      "Chandrima Saha",
+      "Gagandeep Kang",
+      "Soumya Swaminathan",
+      "Sanghamitra Bandyopadhyay"
+    ],
+    answer: 2
+  },
+  {
+    q: "In June 2025, who has been re-appointed as the new CBDT Chairman?",
+    options: ["Ravi Agrawal", "Anuj Kumar Singh", "Rajiv Kumar", "Sanjay Malhotra"],
+    answer: 0
+  },
+  {
+    q: "Salkhan Fossil Park is in ____.",
+    options: ["Uttar Pradesh", "Madhya Pradesh", "Andhra Pradesh", "Kerala"],
+    answer: 0
+  },
+  {
+    q: "In ____ 2026, World Athletics Cross Country Championships will be held in USA.",
+    options: ["January", "March", "April", "July"],
+    answer: 0
+  },
+  {
+    q: "What important event is celebrated during the festival of ‘Baisakhi’ in Chandigarh?",
+    options: [
+      "Birth of Guru Nanak",
+      "Founding of Golden Temple",
+      "Birth of Guru Angad",
+      "Founding of Khalsa Panth"
+    ],
+    answer: 3
+  },
+  {
+    q: "Which of the following was the aim of Liberalisation under New Economic Policy 1991 of India?",
+    options: [
+      "To put embargo on enemy countries trade",
+      "To increase restrictions on economic activities",
+      "To open various sectors of the economy",
+      "To increase non-tariff barriers on imports"
+    ],
+    answer: 2
+  },
+  {
+    q: "Which of the following was the British East India Company’s first major victory in India?",
+    options: [
+      "Battle of Ambur",
+      "Battle of Wandiwash",
+      "First Anglo-Maratha War",
+      "Battle of Plassey"
+    ],
+    answer: 3
+  },
+  {
+    q: "National Swimming Association of India was founded in ____.",
+    options: ["1955", "1953", "1949", "1947"],
+    answer: 2
+  },
+  {
+    q: "In July 2025, the National Green Tribunal has imposed a total fine of Rs. 23.7 crore on authorities in ____ over green belt pollution.",
+    options: ["Uttar Pradesh", "Bihar", "Jharkhand", "Gujarat"],
+    answer: 0
+  },
+  {
+    q: "Gymnastics Federation of India was established in ____.",
+    options: ["1947", "1948", "1951", "1953"],
+    answer: 2
+  },
+  {
+    q: "Which bill/act provided for the trial of British or European persons by Indians, and sought equality between British and Indian judges?",
+    options: [
+      "Regulating Act of 1773",
+      "Ilbert Bill of 1883",
+      "Pitt’s India Act of 1784",
+      "Indian Councils Act of 1892"
+    ],
+    answer: 1
+  },
+  {
+    q: "In 1991, the rupee was devalued in two stages and the cumulative devaluation was about ____ percent in USD terms.",
+    options: ["18", "28", "32", "36"],
+    answer: 0
+  },
+  {
+    q: "Which of the following Indian states does NOT have a Legislative Council?",
+    options: ["Uttar Pradesh", "Bihar", "Rajasthan", "Maharashtra"],
+    answer: 2
+  },
+  {
+    q: "Which of the following statements is correct regarding Article 253 of the Indian Constitution?\nI. It is found in Part XI of the Constitution.\nII. It relates to legislation for giving effect to international agreements.",
+    options: ["Only I", "Only II", "Both I and II", "Neither I nor II"],
+    answer: 2
+  }
+];
+// State    
+    let currentIndex = 0;    
+    let answers = new Array(QUESTIONS.length).fill(null);     
+    let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+    let timeLeft = TOTAL_TIME;    
+    let timerId = null;    
+    let submitted = false;    
+    let isPaused = false;    
+    let reviewMode = false; // true when user is viewing a single question from analysis    
+    const app = document.getElementById("app");    
+    
+    function formatTime(sec){ const m = Math.floor(sec/60), s = sec%60; return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; }    
+    
+    function getStats(){    
+      const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+      QUESTIONS.forEach((q,i)=>{    
+        const a = answers[i];    
+        if (a !== null){    
+          s.attempted++;    
+          if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+          else { s.wrong++; s.marks += MARKS_WRONG; }    
+        }    
+      });    
+      return s;    
+    }    
+    
+    function renderQuestion(){    
+      if (reviewMode) isPaused = true;    
+      if (submitted && !reviewMode){ renderResult(); return; }    
+    
+      const q = QUESTIONS[currentIndex];    
+      const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+      const selected = answers[currentIndex];    
+    
+      const stripHtml = QUESTIONS.map((_,idx)=>{    
+        let cls = "qchip";    
+        if (idx===currentIndex) cls += " current";    
+        if (answers[idx] !== null) cls += " answered";    
+        if (reviewed[idx]) cls += " reviewed";    
+        return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+      }).join("");    
+    
+      app.innerHTML = `    
+        <div class="header">    
+          <div class="title">GK Sectional Mock – CHSL_GK_MOCK(6).html</div>    
+          <div class="timer-wrap">    
+            <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+            <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+          </div>    
+        </div>    
+    
+        <div class="subheader">    
+          <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+          <span class="badge">General Knowledge</span>    
+        </div>    
+    
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progressPercent}%"></div></div>    
+    
+        <div class="q-strip"><div class="q-strip-inner">${stripHtml}</div></div>    
+    
+        <div class="section-tag">General Knowledge</div>    
+    
+        <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+    
+        <div class="options">    
+          ${q.options.map((opt,idx)=>{    
+            let classes = "";    
+            if (selected === idx && !reviewMode) classes = "selected";    
+            if (reviewMode){    
+              if (idx === q.answer) classes = "correct";    
+              else if (selected === idx && selected !== q.answer) classes = "wrong";    
+            } else {    
+              if (selected === idx) classes = "selected";    
+            }    
+            return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+          }).join("")}    
+        </div>    
+    
+        <div class="footer">    
+          <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+          <div class="nav-buttons">    
+            <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+            ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+            <button class="nav-btn" id="markBtn">Mark</button>    
+            <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+          </div>    
+        </div>    
+      `;    
+    
+      document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+        if (reviewMode){    
+          isPaused = true;    
+          renderQuestion();    
+          return;    
+        }    
+        isPaused = !isPaused;    
+        renderQuestion();    
+      });    
+    
+      document.querySelectorAll(".qchip").forEach(b=>{    
+        b.addEventListener("click", ()=>{ currentIndex = Number(b.dataset.q); reviewMode = false; renderQuestion(); });    
+      });    
+    
+      document.querySelectorAll(".option-btn").forEach(b=>{    
+        b.addEventListener("click", ()=>{    
+          const idx = Number(b.dataset.index);    
+          if (reviewMode){    
+            return;    
+          }    
+          answers[currentIndex] = idx;    
+          renderQuestion();    
+        });    
+      });    
+    
+      document.getElementById("prevBtn").addEventListener("click", ()=>{    
+        if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+      });    
+    
+      document.getElementById("nextBtn").addEventListener("click", ()=>{    
+        if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+        else {    
+          submitted = true;    
+          reviewMode = false;    
+          renderResult();    
+        }    
+      });    
+    
+      const markBtnEl = document.getElementById('markBtn');    
+      if (markBtnEl) {    
+        markBtnEl.addEventListener('click', ()=>{    
+          reviewed[currentIndex] = !reviewed[currentIndex];    
+          markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+          renderQuestion();    
+        });    
+      }    
+    
+      const back = document.getElementById("backAnalysis");    
+      if (back){    
+        back.addEventListener("click", ()=>{    
+          reviewMode = false;    
+          submitted = true;    
+          renderResult();    
+        });    
+      }    
+    }    
+    
+    function renderResult(){    
+      if (timerId){ clearInterval(timerId); timerId = null; }    
+      const s = getStats();    
+      const maxMarks = s.total * MARKS_CORRECT;    
+      const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+      let remark = percentage>=80 ? "Excellent! 💯": percentage>=60 ? "Good! 👍": percentage>=40 ? "Average. Can improve 🙂" : "Needs more practice 💪";    
+    
+      let qaHtml = "";    
+      QUESTIONS.forEach((q,i)=>{    
+        const user = answers[i];    
+        const correctIdx = q.answer;    
+        const isSkipped = user === null;    
+        const isCorrect = !isSkipped && user === correctIdx;    
+        const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` : isCorrect ? `<span class="pill-green">Correct</span>` : `<span class="pill-red">Wrong</span>`;    
+        const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+        const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+        qaHtml += `    
+          <div class="qa-card" id="qa-${i}">    
+            <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+            <div class="qa-answer-row">    
+              <div><span class="label">Your answer:</span> ${userText}</div>    
+              <div><span class="label">Correct answer:</span> ${correctText}</div>    
+              <div style="margin-left:auto">${pill}</div>    
+            </div>    
+            <div style="margin-top:8px;text-align:right">    
+              <button class="review-btn" data-q="${i}">Review Q</button>    
+            </div>    
+          </div>    
+        `;    
+      });    
+    
+      app.innerHTML = `    
+        <div class="result">    
+          <h2>GK Section Analysis – CHSL_GK_MOCK(6).html</h2>    
+          <div class="tiny">9-minute sectional mock completed</div>    
+    
+          <div class="card">    
+            <div class="card-title">Overall Performance</div>    
+            <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+            <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+            <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+            <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+            <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+            <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+            <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+          </div>    
+    
+          <div style="margin-top:8px;margin-bottom:8px">    
+            <div class="card-title">Question-wise Review</div>    
+            ${qaHtml}    
+          </div>    
+    
+          <button class="restart-btn" id="restartBtn">Retake Section</button>    
+          <div class="tiny">Timer will restart from 9 minutes</div>    
+        </div>    
+      `;    
+    
+      document.querySelectorAll(".review-btn").forEach(b=>{    
+        b.addEventListener("click", ()=>{    
+          const idx = Number(b.dataset.q);    
+          currentIndex = idx;    
+          reviewMode = true;    
+          submitted = false;    
+          isPaused = true;    
+          renderQuestion();    
+        });    
+      });    
+    
+      document.getElementById("restartBtn").addEventListener("click", ()=>{    
+        currentIndex = 0;    
+        answers = new Array(QUESTIONS.length).fill(null);    
+        timeLeft = TOTAL_TIME;    
+        submitted = false;    
+        isPaused = false;    
+        reviewMode = false;    
+        startTimer();    
+        renderQuestion();    
+      });    
+    }    
+    
+    function startTimer(){    
+      if (timerId) clearInterval(timerId);    
+      timerId = setInterval(()=>{    
+        if (!isPaused && !submitted && !reviewMode){    
+          timeLeft--;    
+          if (timeLeft <= 0){    
+            submitted = true;    
+            reviewMode = false;    
+            renderResult();    
+            return;    
+          }    
+          const el = document.querySelector(".timer");    
+          if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+        } else {    
+          const el = document.querySelector(".timer");    
+          if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+        }    
+      }, 1000);    
+    }    
+    
+    startTimer();    
+    renderQuestion();    
+  </script>  </body>    </html>    

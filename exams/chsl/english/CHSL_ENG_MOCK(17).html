@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>English Sectional Mock</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+/* English Sectional Mock – 13 Minutes */
+const TOTAL_TIME = 13 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+{
+  q: "Choose the one-word substitute for the below sentence.\nJohn asked his neighbor, a person who repairs and maintains machines called?",
+  options: ["Mechanic","Technician","Engineer","Operator"],
+  answer: 0
+},
+{
+  q: "Select the alternative which best expresses the meaning of the idiom/phrase.\nA white elephant",
+  options: [
+    "An extinct species",
+    "A useless possession which is extremely expensive to keep",
+    "Someone belonging to a royal family",
+    "An endangered species"
+  ],
+  answer: 1
+},
+{
+  q: "Choose the option that has an error in the sentence.\nHow important is non-verbal communication, such as facial expressions and gestures, when speaking?",
+  options: [
+    "How important is non-verbal communication,",
+    "such as facial expressions and gestures,",
+    "when speaking?",
+    "No correction required"
+  ],
+  answer: 3
+},
+{
+  q: "Find the grammatically correct sentence from below options.",
+  options: [
+    "Scarcely had he arrived when the meeting started.",
+    "Scarcely he had arrived than the meeting started.",
+    "Scarcely had he arrived than the meeting started.",
+    "Scarcely he arrived when the meeting started."
+  ],
+  answer: 0
+},
+{
+  q: "Fill in the blank with the most appropriate preposition.\nThe delegates conferred ___ the issue for several hours before reaching consensus.",
+  options: ["and","for","on","above"],
+  answer: 2
+},
+{
+  q: "Pick the correctly used homonym.",
+  options: [
+    "She was born in the barn.",
+    "She was borne in the barn.",
+    "He born the weight easily.",
+    "The weight was barn by him."
+  ],
+  answer: 0
+},
+{
+  q: "Choose the correctly spelt word.",
+  options: ["Accessories","Accessorise","Accesories","Accesseries"],
+  answer: 0
+},
+{
+  q: "Choose the best option to replace the underlined part to improve the sentence.\nShe put on all his paintings in the attic.",
+  options: ["put off","put away","put by","No substitution"],
+  answer: 1
+},
+{
+  q: "Choose the option that is the most appropriate conversion of the following sentence into Active Voice.\nThe ancient ruins are being preserved by the archaeologists.",
+  options: [
+    "The archaeologists preserve the ancient ruins.",
+    "The archaeologists are preserving the ancient ruins.",
+    "The archaeologists were preserving the ancient ruins.",
+    "The archaeologists have preserved the ancient ruins."
+  ],
+  answer: 1
+},
+{
+  q: "Choose the correct indirect narration.\nThe culprit said to the judge, “I am innocent as I did not commit the crime at all.”",
+  options: [
+    "The culprit told the judge that he is innocent as he had not committed the crime at all.",
+    "The culprit told the judge that he was innocent as he had not committed the crime at all.",
+    "The culprit told the judge that he is innocent as I did not commit the crime at all.",
+    "The culprit told the judge that he was innocent as I had not committed the crime at all."
+  ],
+  answer: 1
+},
+{
+  q: "Choose the option that is the most appropriate conversion of the following sentence into Direct Speech.\nHe suggested that we revise the chapter thoroughly before the test.",
+  options: [
+    "He suggested, “We will revise the chapter thoroughly before the test.”",
+    "He said, “Revise the chapter thoroughly before the test.”",
+    "He said, “Let’s revise the chapter thoroughly before the test.”",
+    "He suggested, “We must revise the chapter thoroughly before the test.”"
+  ],
+  answer: 2
+},
+{
+  q: "The following sentence has two blanks. Choose the most suitable set of prepositions.\nShe was reprimanded ___ being late and warned ___ further delays.",
+  options: ["at, of","for, against","for, against","from, despite"],
+  answer: 2
+},
+{
+  q: "Choose the option that is the most appropriate conversion of the following sentence into Direct Speech.\nShe said that the documents had to be submitted by the next evening.",
+  options: [
+    "She said, “The documents ought to be submitted by the next evening.”",
+    "She said, “The documents must be submitted by tomorrow evening.”",
+    "She said, “The documents need to be submitted by the coming evening.”",
+    "She said, “The documents are to be submitted by the following evening.”"
+  ],
+  answer: 1
+},
+{
+  q: "Which sentence contains a misspelt word?",
+  options: [
+    "She is able to articulate her ideas clearly.",
+    "He tried to articulate his feelings but struggled.",
+    "Her speech was very articulate and inspiring.",
+    "The teacher asked the students to articulate their answers."
+  ],
+  answer: 2
+},
+{
+  q: "Change the following sentence into the Active form.\nIt had been decided that the final exam would not be graded on a curve this semester.",
+  options: [
+    "They had decided that the final exam would not be graded on a curve this semester.",
+    "The final exam would not be graded on a curve this semester, it had been decided.",
+    "They have decided that the final exam would not be graded on a curve this semester.",
+    "The final exam was decided not to be graded on a curve this semester."
+  ],
+  answer: 0
+},
+{
+  q: "Choose the most suitable option to replace the highlighted part of the sentence.\nThe ban was imposed by the commercial taxes department on Friday after protests by a certain community, which has threat to burn cinema halls screening the controversial movie.",
+  options: [
+    "had threats of burning",
+    "had threatened to burn",
+    "had threatened to burn",
+    "had threatened to burning"
+  ],
+  answer: 2
+},
+{
+  q: "Choose the correct passive voice transformation of the sentence.\nDid Sanya pay the dinner bills?",
+  options: [
+    "The dinner bills did get paid by Sanya?",
+    "The dinner bills were paid by Sanya?",
+    "Did the dinner bills be paid by Sanya?",
+    "Were the dinner bills paid by Sanya?"
+  ],
+  answer: 3
+},
+{
+  q: "Choose the correct passive voice transformation of the sentence.\nWho did you suspect was responsible for leaking the confidential information to the press?",
+  options: [
+    "Who was suspected by you of being responsible for leaking the confidential information to the press?",
+    "By whom was it suspected that the confidential information had been leaked to the press?",
+    "Who do you suspect was responsible for the confidential information being leaked to the press?",
+    "By whom was the confidential information suspected to have been leaked to the press?"
+  ],
+  answer: 1
+},
+{
+  q: "PASSAGE (For Q19–Q23)\n\nOver the past century, the world has witnessed a remarkable evolution in girls’ education. In many parts of the world, especially during the early 1900s, girls were often denied access to schools or allowed only basic literacy. Deep-rooted social norms and economic barriers restricted girls to household roles, and their potential to contribute equally to society remained untapped.\n\nGradually, global awareness about gender equality and human rights began to change this scenario. International organisations and local governments worked together to launch initiatives aimed at increasing female literacy rates, building safe schools, and encouraging families to send their daughters to study. Campaigns highlighting the importance of girls’ education brought hope to millions.\n\nDespite significant progress, challenges still persist in several developing nations, where poverty, early marriage, and cultural resistance continue to keep girls away from classrooms. However, the success stories of educated women who have become leaders, scientists, and change-makers inspire others to break barriers. The evolution of girls’ education proves that empowering women through knowledge benefits entire communities and fuels sustainable development.\n\nComplete the sentence with the most appropriate preposition.\nInternational organisations worked together to launch initiatives aimed ___ increasing female literacy rates.",
+  options: ["On","For","To","At"],
+  answer: 3
+},
+{
+  q: "Which of the following is the correct passive voice transformation of the sentence from the passage?\n“International organisations and local governments worked together to launch initiatives.”",
+  options: [
+    "Initiatives were launched together by international organisations and local governments.",
+    "To launch initiatives was worked together by international organisations and local governments.",
+    "Initiatives had launched by international organisations and local governments.",
+    "International organisations and local governments were being worked together to launch initiatives."
+  ],
+  answer: 0
+},
+{
+  q: "The word “persist” means:",
+  options: [
+    "To disappear quickly",
+    "To continue to exist",
+    "To improve easily",
+    "To become perfect"
+  ],
+  answer: 1
+},
+{
+  q: "The word “untapped” means:",
+  options: [
+    "Fully used",
+    "Forgotten forever",
+    "Hidden in books",
+    "Not yet used or developed"
+  ],
+  answer: 3
+},
+{
+  q: "Which of the following describes the main idea of the passage?",
+  options: [
+    "Girls in developing nations no longer face any problems",
+    "Girls’ education has improved but some barriers still exist",
+    "Boys’ education has declined due to girls’ education",
+    "Only rich countries support girls’ education"
+  ],
+  answer: 1
+},
+{
+  q: "What is the antonym of “Apathy”?",
+  options: ["Indifference","Enthusiasm","Laziness","Carelessness"],
+  answer: 1
+},
+{
+  q: "What is the antonym of “Reprobate”?",
+  options: ["Rogue","Virtuous","Unprincipled","Rakish"],
+  answer: 1
+}
+];
+// State    
+let currentIndex = 0;    
+let answers = new Array(QUESTIONS.length).fill(null);     
+let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+let timeLeft = TOTAL_TIME;    
+let timerId = null;    
+let submitted = false;    
+let isPaused = false;    
+let reviewMode = false; // true when user is viewing a single question from analysis    
+const app = document.getElementById("app");    
+
+function formatTime(sec){ 
+  const m = Math.floor(sec/60), s = sec%60; 
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; 
+}    
+
+function getStats(){    
+  const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+  QUESTIONS.forEach((q,i)=>{    
+    const a = answers[i];    
+    if (a !== null){    
+      s.attempted++;    
+      if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+      else { s.wrong++; s.marks += MARKS_WRONG; }    
+    }    
+  });    
+  return s;    
+}    
+
+function renderQuestion(){    
+  if (reviewMode) isPaused = true;    
+  if (submitted && !reviewMode){ renderResult(); return; }    
+
+  const q = QUESTIONS[currentIndex];    
+  const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+  const selected = answers[currentIndex];    
+
+  const stripHtml = QUESTIONS.map((_,idx)=>{    
+    let cls = "qchip";    
+    if (idx===currentIndex) cls += " current";    
+    if (answers[idx] !== null) cls += " answered";    
+    if (reviewed[idx]) cls += " reviewed";    
+    return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+  }).join("");    
+
+  app.innerHTML = `    
+    <div class="header">    
+      <div class="title">English Sectional Mock</div>    
+      <div class="timer-wrap">    
+        <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+        <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+      </div>    
+    </div>    
+
+    <div class="subheader">    
+      <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+      <span class="badge">English</span>    
+    </div>    
+
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width:${progressPercent}%"></div>
+    </div>    
+
+    <div class="q-strip">
+      <div class="q-strip-inner">${stripHtml}</div>
+    </div>    
+
+    <div class="section-tag">English</div>    
+
+    <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+
+    <div class="options">    
+      ${q.options.map((opt,idx)=>{    
+        let classes = "";    
+        if (selected === idx && !reviewMode) classes = "selected";    
+        if (reviewMode){    
+          if (idx === q.answer) classes = "correct";    
+          else if (selected === idx && selected !== q.answer) classes = "wrong";    
+        } else {    
+          if (selected === idx) classes = "selected";    
+        }    
+        return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+      }).join("")}    
+    </div>    
+
+    <div class="footer">    
+      <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+      <div class="nav-buttons">    
+        <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+        ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+        <button class="nav-btn" id="markBtn">Mark</button>    
+        <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+      </div>    
+    </div>    
+  `;    
+
+  document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+    if (reviewMode){ isPaused = true; renderQuestion(); return; }    
+    isPaused = !isPaused;    
+    renderQuestion();    
+  });    
+
+  document.querySelectorAll(".qchip").forEach(b=>{    
+    b.addEventListener("click", ()=>{ 
+      currentIndex = Number(b.dataset.q); 
+      reviewMode = false; 
+      renderQuestion(); 
+    });    
+  });    
+
+  document.querySelectorAll(".option-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.index);    
+      if (reviewMode) return;    
+      answers[currentIndex] = idx;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{    
+    if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+  });    
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{    
+    if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+    else { submitted = true; reviewMode = false; renderResult(); }    
+  });    
+
+  const markBtnEl = document.getElementById('markBtn');    
+  if (markBtnEl){    
+    markBtnEl.addEventListener('click', ()=>{    
+      reviewed[currentIndex] = !reviewed[currentIndex];    
+      markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+      renderQuestion();    
+    });    
+  }    
+
+  const back = document.getElementById("backAnalysis");    
+  if (back){    
+    back.addEventListener("click", ()=>{    
+      reviewMode = false;    
+      submitted = true;    
+      renderResult();    
+    });    
+  }    
+}    
+
+function renderResult(){    
+  if (timerId){ clearInterval(timerId); timerId = null; }    
+  const s = getStats();    
+  const maxMarks = s.total * MARKS_CORRECT;    
+  const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+  let remark = percentage>=80 ? "Excellent! 💯"
+             : percentage>=60 ? "Good! 👍"
+             : percentage>=40 ? "Average. Can improve 🙂"
+             : "Needs more practice 💪";    
+
+  let qaHtml = "";    
+  QUESTIONS.forEach((q,i)=>{    
+    const user = answers[i];    
+    const correctIdx = q.answer;    
+    const isSkipped = user === null;    
+    const isCorrect = !isSkipped && user === correctIdx;    
+    const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` 
+               : isCorrect ? `<span class="pill-green">Correct</span>` 
+               : `<span class="pill-red">Wrong</span>`;    
+
+    const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+    const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+
+    qaHtml += `    
+      <div class="qa-card" id="qa-${i}">    
+        <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+        <div class="qa-answer-row">    
+          <div><span class="label">Your answer:</span> ${userText}</div>    
+          <div><span class="label">Correct answer:</span> ${correctText}</div>    
+          <div style="margin-left:auto">${pill}</div>    
+        </div>    
+        <div style="margin-top:8px;text-align:right">    
+          <button class="review-btn" data-q="${i}">Review Q</button>    
+        </div>    
+      </div>    
+    `;    
+  });    
+
+  app.innerHTML = `    
+    <div class="result">    
+      <h2>English Section Analysis</h2>    
+      <div class="tiny">9-minute sectional mock completed</div>    
+
+      <div class="card">    
+        <div class="card-title">Overall Performance</div>    
+        <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+        <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+        <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+        <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+        <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+        <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+        <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+      </div>    
+
+      <div style="margin-top:8px;margin-bottom:8px">    
+        <div class="card-title">Question-wise Review</div>    
+        ${qaHtml}    
+      </div>    
+
+      <button class="restart-btn" id="restartBtn">Retake Section</button>    
+      <div class="tiny">Timer will restart from 9 minutes</div>    
+    </div>    
+  `;    
+
+  document.querySelectorAll(".review-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.q);    
+      currentIndex = idx;    
+      reviewMode = true;    
+      submitted = false;    
+      isPaused = true;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("restartBtn").addEventListener("click", ()=>{    
+    currentIndex = 0;    
+    answers = new Array(QUESTIONS.length).fill(null);    
+    timeLeft = TOTAL_TIME;    
+    submitted = false;    
+    isPaused = false;    
+    reviewMode = false;    
+    startTimer();    
+    renderQuestion();    
+  });    
+}    
+
+function startTimer(){    
+  if (timerId) clearInterval(timerId);    
+  timerId = setInterval(()=>{    
+    if (!isPaused && !submitted && !reviewMode){    
+      timeLeft--;    
+      if (timeLeft <= 0){    
+        submitted = true;    
+        reviewMode = false;    
+        renderResult();    
+        return;    
+      }    
+    }    
+    const el = document.querySelector(".timer");    
+    if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+  }, 1000);    
+}    
+
+startTimer();    
+renderQuestion();
+</script>  </body>    </html>

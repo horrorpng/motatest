@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MATHS SECTIONAL TEST</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const TOTAL_TIME = 25 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+  {
+    q: "If A : B = 2 : 3 and B : C = 4 : 5, then what is A : B : C?",
+    options: ["8 : 12 : 15", "2 : 3 : 5", "4 : 6 : 5", "6 : 9 : 10"],
+    answer: 0
+  },
+  {
+    q: "If the average of 4, 6, x, and 10 is 8, find the value of x.",
+    options: ["12", "14", "16", "10"],
+    answer: 0
+  },
+  {
+    q: "The average of four numbers is 44. The average of the first and second is 40, and that of the third and fourth is 48. What is the second number if the first is 36?",
+    options: ["44", "46", "40", "38"],
+    answer: 0
+  },
+  {
+    q: "A student scored 72 marks in a test. If this was 60% of the total, what were the maximum marks?",
+    options: ["110", "115", "120", "125"],
+    answer: 2
+  },
+  {
+    q: "A shopkeeper buys an article for Rs. 100 and sells it for Rs. 120. What is the profit percentage?",
+    options: ["10%", "15%", "20%", "25%"],
+    answer: 2
+  },
+  {
+    q: "An item bought for Rs. 250 is sold at Rs. 300. Find the profit percentage.",
+    options: ["15%", "18%", "20%", "25%"],
+    answer: 2
+  },
+  {
+    q: "A shopkeeper provides two consecutive discounts of 20% and 10% on an item. Calculate the single discount rate equivalent.",
+    options: ["28%", "30%", "32%", "25%"],
+    answer: 0
+  },
+  {
+    q: "In what ratio must a 30% acid solution be mixed with a 60% acid solution to obtain a 50% acid solution?",
+    options: ["1 : 1", "1 : 2", "2 : 1", "3 : 1"],
+    answer: 1
+  },
+  {
+    q: "A sum of Rs. 5750 earns Rs. 2620.50 as simple interest in 5 years. Find the approximate rate of interest.",
+    options: ["8.11%", "9.11%", "10.11%", "11.11%"],
+    answer: 1
+  },
+  {
+    q: "A company manufactures hemispherical brass bells of radius 2 cm. If polishing costs Rs. 0.75 per sq. cm, find the cost of polishing one bell.",
+    options: ["Rs. 18.85", "Rs. 17.65", "Rs. 16.95", "Rs. 15.90"],
+    answer: 0
+  },
+  {
+    q: "The average of 8 numbers is 26. If one number is excluded, the average becomes 25. Find the excluded number.",
+    options: ["34", "40", "33", "32"],
+    answer: 2
+  },
+  {
+    q: "If √15 = 3.88, find the value of √5 / 3.",
+    options: ["1.2933", "1.111", "1.001", "1.493"],
+    answer: 0
+  },
+  {
+    q: "If x = (√2 + 1)/(√2 − 1) and y = (√2 − 1)/(√2 + 1), find x² + y².",
+    options: ["34", "38", "37", "32"],
+    answer: 0
+  },
+  {
+    q: "A, B, and C invest in the ratio 2 : 3 : 5. If the total profit is Rs. 10,000, find B’s share.",
+    options: ["Rs. 3000", "Rs. 3500", "Rs. 2000", "Rs. 2500"],
+    answer: 0
+  },
+  {
+    q: "A, B, and C invest in the ratio 2 : 3 : 5. If the total profit is Rs. 10,000, find A’s share.",
+    options: ["Rs. 2000", "Rs. 2500", "Rs. 3000", "Rs. 4000"],
+    answer: 0
+  },
+  {
+    q: "A currency converter shows 1 USD = 0.090909… JPY. What is the exact fractional form?",
+    options: ["9/100", "1/10", "1/11", "10/99"],
+    answer: 2
+  },
+  {
+    q: "A logistics company charges different rates per km. If total cost is split in the ratio 2 : 3, what amount did the receiver pay?",
+    options: ["Rs. 1200", "Rs. 1350", "Rs. 1444.2", "Rs. 1113.75"],
+    answer: 3
+  },
+  {
+    q: "If tan θ = 3/4, find sin 2θ.",
+    options: ["24/25", "12/25", "7/25", "9/25"],
+    answer: 0
+  },
+  {
+    q: "If x : y = 3 : 4 and y : z = 2 : 5, find x : z.",
+    options: ["3 : 10", "6 : 20", "3 : 5", "4 : 10"],
+    answer: 0
+  },
+  {
+    q: "What simple interest rate will cause a sum of money to double in 15 years?",
+    options: ["6.67%", "7.67%", "5.16%", "4.19%"],
+    answer: 0
+  },
+  {
+    q: "A regular polygon has 9 sides. Find the sum of its interior angles.",
+    options: ["1800°", "1620°", "1440°", "1260°"],
+    answer: 3
+  },
+  {
+    q: "Each interior angle of a regular polygon is 165°. Find the number of sides.",
+    options: ["20", "22", "18", "24"],
+    answer: 3
+  },
+  {
+    q: "A cone and a hemisphere have equal volumes and same radius r. Find the height of the cone.",
+    options: ["r", "2r", "3r", "(4/3)r"],
+    answer: 1
+  },
+  {
+    q: "A spherical tank of radius 4 m is emptied into 64 identical smaller spherical tanks. Find the radius of each small tank.",
+    options: ["1 m", "2.5 m", "1.26 m", "1.58 m"],
+    answer: 0
+  },
+  {
+    q: "If cos 2A = 1/2, find sin 2A.",
+    options: ["√3 / 2", "√3 / 4", "√5 / 2", "√7 / 2"],
+    answer: 0
+  }
+];
+// State
+let currentIndex = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags
+let timeLeft = TOTAL_TIME;
+let timerId = null;
+let submitted = false;
+let isPaused = false;
+let reviewMode = false; // true when user is viewing a single question from analysis
+const app = document.getElementById("app");
+
+function formatTime(sec){
+  const m = Math.floor(sec/60), s = sec%60;
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`;
+}
+
+function getStats(){
+  const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };
+  QUESTIONS.forEach((q,i)=>{
+    const a = answers[i];
+    if (a !== null){
+      s.attempted++;
+      if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }
+      else { s.wrong++; s.marks += MARKS_WRONG; }
+    }
+  });
+  return s;
+}
+
+function renderQuestion(){
+  if (reviewMode) isPaused = true;
+  if (submitted && !reviewMode){ renderResult(); return; }
+
+  const q = QUESTIONS[currentIndex];
+  const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;
+  const selected = answers[currentIndex];
+
+  const stripHtml = QUESTIONS.map((_,idx)=>{
+    let cls = "qchip";
+    if (idx===currentIndex) cls += " current";
+    if (answers[idx] !== null) cls += " answered";
+    if (reviewed[idx]) cls += " reviewed";
+    return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;
+  }).join("");
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="title">Maths Sectional Mock – MATHS.html</div>
+      <div class="timer-wrap">
+        <div class="timer">⏱ ${formatTime(timeLeft)}</div>
+        <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>
+      </div>
+    </div>
+
+    <div class="subheader">
+      <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>
+      <span class="badge">Mathematics</span>
+    </div>
+
+    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progressPercent}%"></div></div>
+
+    <div class="q-strip"><div class="q-strip-inner">${stripHtml}</div></div>
+
+    <div class="section-tag">Mathematics</div>
+
+    <div class="question-text">Q${currentIndex+1}. ${q.q}</div>
+
+    <div class="options">
+      ${q.options.map((opt,idx)=>{
+        let classes = "";
+        if (selected === idx && !reviewMode) classes = "selected";
+        if (reviewMode){
+          if (idx === q.answer) classes = "correct";
+          else if (selected === idx && selected !== q.answer) classes = "wrong";
+        } else {
+          if (selected === idx) classes = "selected";
+        }
+        return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;
+      }).join("")}
+    </div>
+
+    <div class="footer">
+      <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>
+      <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>
+        ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }
+        <button class="nav-btn" id="markBtn">Mark</button>
+        <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("pauseBtn").addEventListener("click", ()=>{
+    if (reviewMode){
+      isPaused = true;
+      renderQuestion();
+      return;
+    }
+    isPaused = !isPaused;
+    renderQuestion();
+  });
+
+  document.querySelectorAll(".qchip").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      currentIndex = Number(b.dataset.q);
+      reviewMode = false;
+      renderQuestion();
+    });
+  });
+
+  document.querySelectorAll(".option-btn").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const idx = Number(b.dataset.index);
+      if (reviewMode) return;
+      answers[currentIndex] = idx;
+      renderQuestion();
+    });
+  });
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{
+    if (currentIndex>0){
+      currentIndex--;
+      reviewMode = false;
+      renderQuestion();
+    }
+  });
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{
+    if (currentIndex+1 < QUESTIONS.length){
+      currentIndex++;
+      reviewMode = false;
+      renderQuestion();
+    } else {
+      submitted = true;
+      reviewMode = false;
+      renderResult();
+    }
+  });
+
+  const markBtnEl = document.getElementById('markBtn');
+  if (markBtnEl) {
+    markBtnEl.addEventListener('click', ()=>{
+      reviewed[currentIndex] = !reviewed[currentIndex];
+      markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';
+      renderQuestion();
+    });
+  }
+
+  const back = document.getElementById("backAnalysis");
+  if (back){
+    back.addEventListener("click", ()=>{
+      reviewMode = false;
+      submitted = true;
+      renderResult();
+    });
+  }
+}
+
+function renderResult(){
+  if (timerId){ clearInterval(timerId); timerId = null; }
+  const s = getStats();
+  const maxMarks = s.total * MARKS_CORRECT;
+  const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;
+  let remark = percentage>=80 ? "Excellent! 💯": percentage>=60 ? "Good! 👍": percentage>=40 ? "Average. Can improve 🙂" : "Needs more practice 💪";
+
+  let qaHtml = "";
+  QUESTIONS.forEach((q,i)=>{
+    const user = answers[i];
+    const correctIdx = q.answer;
+    const isSkipped = user === null;
+    const isCorrect = !isSkipped && user === correctIdx;
+    const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` : isCorrect ? `<span class="pill-green">Correct</span>` : `<span class="pill-red">Wrong</span>`;
+    const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;
+    const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;
+    qaHtml += `
+      <div class="qa-card" id="qa-${i}">
+        <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>
+        <div class="qa-answer-row">
+          <div><span class="label">Your answer:</span> ${userText}</div>
+          <div><span class="label">Correct answer:</span> ${correctText}</div>
+          <div style="margin-left:auto">${pill}</div>
+        </div>
+        <div style="margin-top:8px;text-align:right">
+          <button class="review-btn" data-q="${i}">Review Q</button>
+        </div>
+      </div>
+    `;
+  });
+
+  app.innerHTML = `
+    <div class="result">
+      <h2>Maths Section Analysis – CHSL_MATHS_MOCK(6).html</h2>
+      <div class="tiny">9-minute sectional mock completed</div>
+
+      <div class="card">
+        <div class="card-title">Overall Performance</div>
+        <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>
+        <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>
+        <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>
+        <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>
+        <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>
+        <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>
+        <div class="stat-row"><span>Remark</span><span>${remark}</span></div>
+      </div>
+
+      <div style="margin-top:8px;margin-bottom:8px">
+        <div class="card-title">Question-wise Review</div>
+        ${qaHtml}
+      </div>
+
+      <button class="restart-btn" id="restartBtn">Retake Section</button>
+      <div class="tiny">Timer will restart from 9 minutes</div>
+    </div>
+  `;
+
+  document.querySelectorAll(".review-btn").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const idx = Number(b.dataset.q);
+      currentIndex = idx;
+      reviewMode = true;
+      submitted = false;
+      isPaused = true;
+      renderQuestion();
+    });
+  });
+
+  document.getElementById("restartBtn").addEventListener("click", ()=>{
+    currentIndex = 0;
+    answers = new Array(QUESTIONS.length).fill(null);
+    timeLeft = TOTAL_TIME;
+    submitted = false;
+    isPaused = false;
+    reviewMode = false;
+    startTimer();
+    renderQuestion();
+  });
+}
+
+function startTimer(){
+  if (timerId) clearInterval(timerId);
+  timerId = setInterval(()=>{
+    if (!isPaused && !submitted && !reviewMode){
+      timeLeft--;
+      if (timeLeft <= 0){
+        submitted = true;
+        reviewMode = false;
+        renderResult();
+        return;
+      }
+      const el = document.querySelector(".timer");
+      if (el) el.textContent = "⏱ " + formatTime(timeLeft);
+    } else {
+      const el = document.querySelector(".timer");
+      if (el) el.textContent = "⏱ " + formatTime(timeLeft);
+    }
+  }, 1000);
+}
+
+startTimer();
+renderQuestion();
+</script>  </body>    </html>

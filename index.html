@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mock Test Portal - CHSL</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">📝</span>
+      <span class="logo-text">
+        <span class="strike-mock">Mock</span><span class="test-text">Test</span>
+        <span class="mota-text">MOTA TEST</span>
+      </span>
+    </div>
+    <div class="header-stats">
+      <span id="totalAttempted">0</span> Attempted &bull;
+      <span id="totalMocks">0</span> Total Mocks
+    </div>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <h1>🏆 SSC CHSL <span class="strike-mock">Mock</span>Tests</h1>
+  <p class="love-line">❤️ With Love for <strong class="mota-glow">MOTA</strong> ❤️</p>
+  <p>अपनी तैयारी को अगले स्तर पर ले जाएं। Subject-wise sectional mocks के साथ अभ्यास करें।</p>
+  <div class="hero-badges">
+    <span class="hero-badge eng">📖 English (28)</span>
+    <span class="hero-badge gk">🌍 GK (28)</span>
+    <span class="hero-badge maths">🔢 Maths (27)</span>
+    <span class="hero-badge full">📋 Full (1)</span>
+  </div>
+</section>
+
+<!-- ===== SUBJECT TABS ===== -->
+<nav class="tabs" id="subjectTabs">
+  <button class="tab active" data-subject="english">
+    <span class="tab-icon">📖</span>
+    <span class="tab-label">English</span>
+    <span class="tab-count">28</span>
+  </button>
+  <button class="tab" data-subject="gk">
+    <span class="tab-icon">🌍</span>
+    <span class="tab-label">GK</span>
+    <span class="tab-count">28</span>
+  </button>
+  <button class="tab" data-subject="maths">
+    <span class="tab-icon">🔢</span>
+    <span class="tab-label">Maths</span>
+    <span class="tab-count">27</span>
+  </button>
+  <button class="tab" data-subject="full">
+    <span class="tab-icon">📋</span>
+    <span class="tab-label">Full Mock</span>
+    <span class="tab-count">1</span>
+  </button>
+</nav>
+
+<!-- ===== MOCK LIST ===== -->
+<main class="main" id="mockContainer">
+  <div class="mock-grid" id="mockGrid"></div>
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <p>Made with ❤️ for <strong>MOTA</strong> &bull; Practice makes perfect!</p>
+  <p class="footer-mota">🙏 <span class="strike-mock">Mock</span>Test → <strong>MOTA TEST</strong> 🙏</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

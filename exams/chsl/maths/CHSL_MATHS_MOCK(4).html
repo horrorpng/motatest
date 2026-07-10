@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHSL Maths Sectional Mock (25Q)</title>
+
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:14px}
+.container{max-width:520px;width:100%;background:#fff;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08);padding:18px}
+
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.title{font-size:17px;font-weight:600}
+.timer{background:#111827;color:#fff;padding:5px 12px;border-radius:999px;font-size:13px}
+
+.sub{font-size:12px;color:#6b7280;margin-bottom:8px;display:flex;justify-content:space-between}
+.badge{background:#e5e7eb;border-radius:999px;padding:2px 8px}
+
+.q-strip{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.q-strip::-webkit-scrollbar{display:none}
+.qchip{min-width:26px;height:26px;border-radius:50%;border:1px solid #d1d5db;font-size:11px;background:#f9fafb}
+.qchip.current{background:#111827;color:#fff}
+.qchip.answered{background:#dbeafe;color:#1d4ed8}
+.qchip.reviewed{background:rebeccapurple;color:#fff}
+
+.question{font-size:15px;margin-bottom:10px;white-space:pre-line}
+.options{display:grid;gap:8px}
+.option{border:1px solid #d1d5db;border-radius:999px;padding:9px 14px;text-align:left;font-size:14px;background:#fff}
+.option.selected{background:#2563eb;color:#fff}
+.option.correct{background:#dcfce7;color:#166534}
+.option.wrong{background:#fee2e2;color:#b91c1c}
+
+.footer{margin-top:14px;display:flex;gap:6px}
+.btn{border:none;border-radius:999px;padding:9px 12px;font-size:13px}
+.btn.gray{background:#e5e7eb}
+.btn.dark{background:#111827;color:#fff;flex:1}
+.back-btn{background:#6b7280;color:#fff}
+
+.result h2{text-align:center}
+.card{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:8px}
+.qa{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:6px}
+.pill{border-radius:999px;padding:3px 8px;font-size:12px}
+.green{background:#dcfce7}
+.red{background:#fee2e2}
+.gray{background:#e5e7eb}
+
+.review-btn{margin-left:auto;background:#111827;color:#fff;border:none;border-radius:999px;padding:5px 10px;font-size:12px}
+.restart{width:100%;margin-top:10px;padding:10px;border:none;border-radius:999px;background:#2563eb;color:#fff}
+</style>
+</head>
+
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const TOTAL_TIME = 25*60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+
+/* ===== EXACT QUESTIONS (WORD FOR WORD) ===== */
+const QUESTIONS = [
+{q:`Which one of the following is TRUE?
+
+A. All irrational numbers are real
+B. All real numbers are irrational
+C. Rational numbers are not real
+D. Integers are not rational`,
+options:["All irrational numbers are real","All real numbers are irrational","Rational numbers are not real","Integers are not rational"],answer:0},
+
+{q:`A right prism has a base that is a regular hexagon of side 6 cm. The height of the prism is 10 cm. A square cavity of side 2 cm is carved vertically through the center of the prism from top to bottom. Calculate the volume of the material remaining in the prism.`,
+options:["908.5 cm³","895.3 cm³","882.6 cm³","867.2 cm³"],answer:1},
+
+{q:`A glass manufacturer produces transparent right prism blocks with a square base of side 10 cm and height 25 cm. If the selling price is ₹0.60 per cm³ and the cost price is ₹0.40 per cm³, what is the total profit earned on selling 12 such prisms?`,
+options:["₹5400","₹6000","₹6250","₹5800"],answer:1},
+
+{q:`A and B invest ₹50,000 and ₹40,000 respectively. After 6 months, A withdraws all of his capital. At the end of the year, what is their profit-sharing ratio?`,
+options:["5 : 7","8 : 7","6 : 5","5 : 8"],answer:3},
+
+{q:`A started a business with ₹30,000. B joined after 5 months with ₹40,000. At the end of the year, what is their profit-sharing ratio?`,
+options:["5 : 9","9 : 7","4 : 5","7 : 8"],answer:1},
+
+{q:`A right circular cylinder and a cone have the same base radius and height. What is the ratio of their volumes (cylinder : cone)?`,
+options:["2 : 1","1 : 2","3 : 1","1 : 3"],answer:2},
+
+{q:`The center of the circle that touches all triangle sides is:`,
+options:["Incenter","Centroid","Circumcenter","Orthocenter"],answer:0},
+
+{q:`If a cone is inscribed inside a cylinder of the same base and height, what is the ratio of the volume of the cone to that of the cylinder?`,
+options:["1 : 2","2 : 1","3 : 1","1 : 3"],answer:3},
+
+{q:`If x = 3cos A + 4sin A and y = 3sin A − 4cos A, then find the value of 2(x² + y²).`,
+options:["50","63","44","48"],answer:0},
+
+{q:`The ratio of the two angles of a triangle is 3 : 5, respectively. If the third angle of the triangle is 25% more than the sum of the given two angles of the triangle, find the largest angle of the triangle.`,
+options:["100°","120°","80°","130°"],answer:0},
+
+{q:`ABC is a triangle where AB = 12 cm and AC = 18 cm. D is a point on BC such that BD = CD. If the perimeter of the triangle is 48 cm, then find the length of AD.`,
+options:["2√11 cm","√15 cm","√22 cm","3√17 cm"],answer:3},
+
+{q:`In ΔABC, D and E are points on sides AB and AC respectively, such that DE ∥ BC. If AD = 3 cm, DB = 6 cm, and AE = 4 cm, find EC.`,
+options:["8 cm","5 cm","6 cm","3 cm"],answer:0},
+
+{q:`An alloy contains zinc, copper and tin in the ratio 3 : 2 : 2 and another contains copper, tin and lead in the ratio 2 : 3 : 5. If equal weights of both alloys are melted together to form a third alloy, then the weight of lead per kg in the new alloy will be:`,
+options:["1 kg","0.75 kg","0.25 kg","0.50 kg"],answer:2},
+
+{q:`The cost of Type 1 wheat is ₹16 per kg, and Type 2 wheat is ₹24 per kg. If both Type 1 and Type 2 are mixed in the ratio of 3 : 5, then the price per kg of the mixed variety of wheat is:`,
+options:["23 kg","22 kg","24 kg","21 kg"],answer:3},
+
+{q:`Sunil started a juice (lemon syrup + water) counter. Initially, he had 145 litres of juice, which had 30% water in it. He sold 22 litres of the juice. Then he added an equal amount of lemon syrup and water. Now the ratio of water to lemon syrup became 1 : 2. How much water was added later on?`,
+options:["9.25 litres","13.25 litres","10.25 litres","12.3 litres"],answer:3},
+
+{q:`6 litres of chocolate syrup are mixed in x litres of milk. If the syrup is 20% of the mixture, what is the value of x?`,
+options:["23 litres","24 litres","21 litres","26 litres"],answer:1},
+
+{q:`Amit can finish the work in 15 days, and Baban can finish the same work in 25 days. They worked together for 5 days. The rest of the work was finished by Amit and Chetan in 4 days. How much time is required for Chetan to finish this work?`,
+options:["21 days","20 days","18 days","17 days"],answer:1},
+
+{q:`A can do a certain work in the same time that B and C together can do it. If A and B together could do it in 10 days and C alone in 40 days, then A alone could do it in:`,
+options:["16 days","19 days","14 days","13 days"],answer:0},
+
+{q:`A can finish the work in 16 days, and B can do the same work in 12 days. B worked for 8 days and left the job. In how many days A alone can finish the remaining work?`,
+options:["5 days 8 hours","7 days","4 days 10 hours","6 days"],answer:0},
+
+{q:`A rectangular tile having a perimeter of 224 cm has been used to pave a floor of length and breadth 25.6 m and 14.4 m, respectively. If the ratio of length to breadth of each tile is 4 : 3, then find the number of tiles required to pave the floor completely.`,
+options:["1800","1500","1600","1200"],answer:3},
+
+{q:`The area of a rectangle is 48 cm² more than that of a square. If the length of the rectangle is 4 cm more than the side of the square and the breadth of the rectangle is 2 cm less than the side of the square, then find the perimeter of both the square and the rectangle.`,
+options:["108 cm, 122 cm","112 cm, 116 cm","145 cm, 156 cm","125 cm, 140 cm"],answer:1},
+
+{q:`Two circles C₁ and C₂ have radii 5 and 3 units, and their centers are 13 units apart. Then the number of common tangents they have is:`,
+options:["1","2","3","4"],answer:3},
+
+{q:`One of the angles of a quadrilateral is 84°. If the ratio of the remaining angles of a quadrilateral is 4 : 3 : 5, respectively, then find the difference between the smallest and largest angles.`,
+options:["16°","66°","46°","36°"],answer:2},
+
+{q:`If the graph of a linear equation passes through (0, −2) and has a slope −3, what is its equation?`,
+options:["y = 3x − 2","y = 3x + 2","y = −3x − 2","y = −3x + 2"],answer:2},
+
+{q:`A can complete the work in 12 days, B in 15 days, and C in 20 days. They work in the following manner:
+• On the first day A works
+• On the second day B works
+• On the third day C works
+• The cycle repeats
+
+In how many days will the work be completed?`,
+options:["5 days","10 days","15 days","20 days"],answer:2}
+];
+
+/* ===== REST OF SCRIPT UNCHANGED ===== */
+let index=0,answers=new Array(25).fill(null),
+reviewed=new Array(25).fill(false),
+timeLeft=TOTAL_TIME,submitted=false,reviewMode=false,timer,stripScroll=0;
+
+const app=document.getElementById("app");
+
+function startTimer(){
+ timer=setInterval(()=>{
+  if(!submitted && !reviewMode){
+   timeLeft--;
+   if(timeLeft<=0){submitted=true;renderResult();}
+   render();
+  }
+ },1000);
+}
+
+function render(){
+ if(submitted && !reviewMode){renderResult();return;}
+ const old=document.querySelector(".q-strip");
+ if(old) stripScroll=old.scrollLeft;
+
+ const q=QUESTIONS[index];
+ app.innerHTML=`
+ <div class="header">
+  <div class="title">Maths Sectional Mock</div>
+  <div class="timer">⏱ ${Math.floor(timeLeft/60)}:${String(timeLeft%60).padStart(2,"0")}</div>
+ </div>
+
+ <div class="sub">
+  <span>+2 / −0.5</span>
+  <span class="badge">Mathematics</span>
+ </div>
+
+ <div class="q-strip">
+ ${QUESTIONS.map((_,i)=>`<button class="qchip ${i===index?"current":""} ${answers[i]!=null?"answered":""} ${reviewed[i]?"reviewed":""}" onclick="jump(${i})">${i+1}</button>`).join("")}
+ </div>
+
+ <div class="question">Q${index+1}. ${q.q}</div>
+
+ <div class="options">
+ ${q.options.map((o,i)=>{
+   let cls="";
+   if(reviewMode){
+     if(i===q.answer) cls="correct";
+     else if(answers[index]===i) cls="wrong";
+   } else if(answers[index]===i) cls="selected";
+   return `<button class="option ${cls}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+ }).join("")}
+ </div>
+
+ <div class="footer">
+  <button class="btn gray" onclick="prev()">Prev</button>
+  ${reviewMode?`<button class="btn back-btn" onclick="backToAnalysis()">Back</button>`:`<button class="btn gray" onclick="mark()">Mark</button>`}
+  <button class="btn dark" onclick="next()">${index+1===25?"Submit":"Next"}</button>
+ </div>`;
+}
+
+function selectOpt(i){answers[index]=i;render();}
+function prev(){if(index>0)index--;render();}
+function next(){if(index<24)index++;else submitted=true;render();}
+function mark(){reviewed[index]=!reviewed[index];render();}
+function jump(i){index=i;render();}
+
+function renderResult(){
+ clearInterval(timer);
+ let a=0,c=0,w=0,m=0;
+ QUESTIONS.forEach((q,i)=>{
+  if(answers[i]!=null){
+   a++;
+   if(answers[i]===q.answer){c++;m+=MARKS_CORRECT;}
+   else{w++;m+=MARKS_WRONG;}
+  }
+ });
+ let pct=Math.round((m/50)*100);
+ let remark=pct>=80?"Excellent":pct>=60?"Good":pct>=40?"Average":"Needs Practice";
+
+ app.innerHTML=`
+ <div class="result">
+  <h2>Overall Performance</h2>
+  <div class="card">
+   <div>Total: 25</div>
+   <div>Attempted: ${a}</div>
+   <div>Correct: ${c}</div>
+   <div>Wrong: ${w}</div>
+   <div>Marks: ${m}/50</div>
+   <div>Remark: ${remark}</div>
+  </div>
+
+  <h3>Question-wise Analysis</h3>
+  ${QUESTIONS.map((q,i)=>{
+   let ua=answers[i];
+   let pill=ua==null?"gray":ua===q.answer?"green":"red";
+   return `<div class="qa">
+    <b>Q${i+1}.</b> ${q.q}<br><br>
+    <span class="pill ${pill}">Your: ${ua==null?"Skipped":String.fromCharCode(65+ua)}</span>
+    <span class="pill green">Correct: ${String.fromCharCode(65+q.answer)}</span>
+    <button class="review-btn" onclick="reviewQuestion(${i})">Review Q</button>
+   </div>`;
+  }).join("")}
+
+  <button class="restart" onclick="location.reload()">Retake Section</button>
+ </div>`;
+}
+
+function reviewQuestion(i){index=i;reviewMode=true;render();}
+function backToAnalysis(){reviewMode=false;renderResult();}
+
+startTimer();
+render();
+</script>
+</body>
+</html>

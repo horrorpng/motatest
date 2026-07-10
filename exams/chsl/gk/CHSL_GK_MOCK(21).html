@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>GK Sectional Mock – Set 3 (Review v2)</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const TOTAL_TIME = 9 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+  {
+    q: "Which type of bill cannot originate in the State Legislative Council of an Indian state?\nI. Money Bill\nII. Ordinary Bill",
+    options: ["Only I", "Only II", "Both I and II", "Neither I nor II"],
+    answer: 0
+  },
+  {
+    q: "The Konkan Railway connects _____.",
+    options: [
+      "Roha and Mangalore",
+      "Kolkata and Cuttack",
+      "Cuttack and Hyderabad",
+      "Kochi and Chennai"
+    ],
+    answer: 0
+  },
+  {
+    q: "In India, the Second Five Year Plan ended in which year?",
+    options: ["1950", "1955", "1961", "1972"],
+    answer: 2
+  },
+  {
+    q: "As per MoSPI report of 2024, sex ratio of India by 2036 will be _____.",
+    options: ["952", "972", "932", "982"],
+    answer: 0
+  },
+  {
+    q: "In which direction does the electrical impulse travel in a nerve cell after being created?",
+    options: [
+      "From dendrite to cell body, then along the axon",
+      "From axon to dendrite",
+      "From cell body to dendrite",
+      "From synapse to muscle cells"
+    ],
+    answer: 0
+  },
+  {
+    q: "Which of the following novels is the first in a trilogy written by R. K. Narayan?",
+    options: [
+      "The Scream",
+      "The Namesake",
+      "Swami and Friends",
+      "The Hungry Tide"
+    ],
+    answer: 2
+  },
+  {
+    q: "Which of the following statements is correct regarding the ‘Doongi Festival’ of Himachal Pradesh?",
+    options: [
+      "It is celebrated in honour of Hidimba Devi (wife of Bhima)",
+      "It is dedicated to the Goddess of wealth",
+      "It marks the beginning of the Tibetan year",
+      "It is celebrated in honour of Lord Shiva"
+    ],
+    answer: 0
+  },
+  {
+    q: "The Victoria Memorial built between 1906 and 1921 is located in _____.",
+    options: ["Delhi", "Kolkata", "Chennai", "Shimla"],
+    answer: 1
+  },
+  {
+    q: "‘Sattriya Nritya’ is the classical dance of which Indian state?",
+    options: ["Assam", "Rajasthan", "Tamil Nadu", "Odisha"],
+    answer: 0
+  },
+  {
+    q: "What is SpaDex, launched by ISRO in December 2024?",
+    options: [
+      "A lunar lander",
+      "A solar observation mission",
+      "A navigation satellite",
+      "A docking experiment"
+    ],
+    answer: 3
+  },
+  {
+    q: "In February 2025, NIOT was entrusted with designing the 4th generation deep-ocean human scientific submersible named _____.",
+    options: [
+      "Matsya-6000",
+      "Samudra-5000",
+      "Manimekhala-6000",
+      "Shankha-5000"
+    ],
+    answer: 0
+  },
+  {
+    q: "Who administers and regulates the NPS Vatsalya scheme launched in September 2024?",
+    options: [
+      "Reserve Bank of India",
+      "SEBI",
+      "Pension Fund Regulatory and Development Authority",
+      "Ministry of Education"
+    ],
+    answer: 2
+  },
+  {
+    q: "In Global University Employability Ranking 2025, which was the highest ranked Indian university?",
+    options: [
+      "IIT Delhi",
+      "Indian Institute of Science",
+      "IIT Bombay",
+      "IIT Kharagpur"
+    ],
+    answer: 0
+  },
+  {
+    q: "Tulika Maan is related to which of the following sports?",
+    options: ["Judo", "Athletics", "Weightlifting", "Badminton"],
+    answer: 0
+  },
+  {
+    q: "As of June 2025, which city has surpassed Mumbai to become India’s ‘leopard capital’?",
+    options: ["Chennai", "Bengaluru", "Bhopal", "Hyderabad"],
+    answer: 1
+  },
+  {
+    q: "The Darbhanga Gaya ki Dhrupad, a classical form of Indian music, is associated with which state/UT?",
+    options: ["Bihar", "Haryana", "Gujarat", "Jammu and Kashmir"],
+    answer: 0
+  },
+  {
+    q: "Which of the following is known as the ‘Paper Tax’ in India?\nI. Wealth tax\nII. Goods and Services Tax",
+    options: ["Only I", "Only II", "Both I and II", "Neither I nor II"],
+    answer: 0
+  },
+  {
+    q: "Which of the following relates to expenses incurred for the normal functioning of government departments?",
+    options: [
+      "Revenue expenditure",
+      "Capital expenditure",
+      "Revenue receipt",
+      "Capital receipt"
+    ],
+    answer: 0
+  },
+  {
+    q: "The Foreign Investment Promotion Board was initially constituted in India under the _____.",
+    options: [
+      "Prime Minister’s Office",
+      "Parliament of India",
+      "Finance Commission",
+      "President of India"
+    ],
+    answer: 0
+  },
+  {
+    q: "The Reserve Bank of India first introduced the Banking Ombudsman Scheme in _____.",
+    options: ["1995", "1996", "1991", "1992"],
+    answer: 0
+  },
+  {
+    q: "Which of the following is NOT the aim of the Directive Principles of State Policy?",
+    options: [
+      "Welfare State",
+      "Economic democracy",
+      "Social democracy",
+      "Political democracy"
+    ],
+    answer: 3
+  },
+  {
+    q: "In March 2024, who won the ‘Best Creator for Social Change’ award at India’s first National Creators Awards?",
+    options: ["Kamiya Jani", "RJ Raunac", "Jaya Kishori", "Pankti Pandey"],
+    answer: 2
+  },
+  {
+    q: "In October 2024, who was appointed as the Chief of the Indian Coast Guard?",
+    options: [
+      "Ambarish Kenghe",
+      "Devendra Kumar Upadhyaya",
+      "Paramesh Sivamani",
+      "Neeraj Parakh"
+    ],
+    answer: 2
+  },
+  {
+    q: "What is the full form of PM-AJAY, seen in news in May 2025?",
+    options: [
+      "Pradhan Mantri Anusuchit Jaati Abhyuday Yojana",
+      "Pradhan Mantri Awas Jan Aadhar Yojna",
+      "Pradhan Mantri Adarsh Jan Abhiyan Yojna",
+      "PM Ann-Jal Arthik Yojna"
+    ],
+    answer: 0
+  },
+  {
+    q: "As of July 2025, women in India represent only ____ of the STEM workforce.",
+    options: ["43%", "13%", "27%", "6%"],
+    answer: 2
+  }
+];
+// State    
+    let currentIndex = 0;    
+    let answers = new Array(QUESTIONS.length).fill(null);     
+    let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+    let timeLeft = TOTAL_TIME;    
+    let timerId = null;    
+    let submitted = false;    
+    let isPaused = false;    
+    let reviewMode = false; // true when user is viewing a single question from analysis    
+    const app = document.getElementById("app");    
+    
+    function formatTime(sec){ const m = Math.floor(sec/60), s = sec%60; return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; }    
+    
+    function getStats(){    
+      const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+      QUESTIONS.forEach((q,i)=>{    
+        const a = answers[i];    
+        if (a !== null){    
+          s.attempted++;    
+          if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+          else { s.wrong++; s.marks += MARKS_WRONG; }    
+        }    
+      });    
+      return s;    
+    }    
+    
+    function renderQuestion(){    
+      if (reviewMode) isPaused = true;    
+      if (submitted && !reviewMode){ renderResult(); return; }    
+    
+      const q = QUESTIONS[currentIndex];    
+      const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+      const selected = answers[currentIndex];    
+    
+      const stripHtml = QUESTIONS.map((_,idx)=>{    
+        let cls = "qchip";    
+        if (idx===currentIndex) cls += " current";    
+        if (answers[idx] !== null) cls += " answered";    
+        if (reviewed[idx]) cls += " reviewed";    
+        return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+      }).join("");    
+    
+      app.innerHTML = `    
+        <div class="header">    
+          <div class="title">GK Sectional Mock – CHSL_GK_MOCK(6).html</div>    
+          <div class="timer-wrap">    
+            <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+            <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+          </div>    
+        </div>    
+    
+        <div class="subheader">    
+          <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+          <span class="badge">General Knowledge</span>    
+        </div>    
+    
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progressPercent}%"></div></div>    
+    
+        <div class="q-strip"><div class="q-strip-inner">${stripHtml}</div></div>    
+    
+        <div class="section-tag">General Knowledge</div>    
+    
+        <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+    
+        <div class="options">    
+          ${q.options.map((opt,idx)=>{    
+            let classes = "";    
+            if (selected === idx && !reviewMode) classes = "selected";    
+            if (reviewMode){    
+              if (idx === q.answer) classes = "correct";    
+              else if (selected === idx && selected !== q.answer) classes = "wrong";    
+            } else {    
+              if (selected === idx) classes = "selected";    
+            }    
+            return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+          }).join("")}    
+        </div>    
+    
+        <div class="footer">    
+          <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+          <div class="nav-buttons">    
+            <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+            ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+            <button class="nav-btn" id="markBtn">Mark</button>    
+            <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+          </div>    
+        </div>    
+      `;    
+    
+      document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+        if (reviewMode){    
+          isPaused = true;    
+          renderQuestion();    
+          return;    
+        }    
+        isPaused = !isPaused;    
+        renderQuestion();    
+      });    
+    
+      document.querySelectorAll(".qchip").forEach(b=>{    
+        b.addEventListener("click", ()=>{ currentIndex = Number(b.dataset.q); reviewMode = false; renderQuestion(); });    
+      });    
+    
+      document.querySelectorAll(".option-btn").forEach(b=>{    
+        b.addEventListener("click", ()=>{    
+          const idx = Number(b.dataset.index);    
+          if (reviewMode){    
+            return;    
+          }    
+          answers[currentIndex] = idx;    
+          renderQuestion();    
+        });    
+      });    
+    
+      document.getElementById("prevBtn").addEventListener("click", ()=>{    
+        if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+      });    
+    
+      document.getElementById("nextBtn").addEventListener("click", ()=>{    
+        if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+        else {    
+          submitted = true;    
+          reviewMode = false;    
+          renderResult();    
+        }    
+      });    
+    
+      const markBtnEl = document.getElementById('markBtn');    
+      if (markBtnEl) {    
+        markBtnEl.addEventListener('click', ()=>{    
+          reviewed[currentIndex] = !reviewed[currentIndex];    
+          markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+          renderQuestion();    
+        });    
+      }    
+    
+      const back = document.getElementById("backAnalysis");    
+      if (back){    
+        back.addEventListener("click", ()=>{    
+          reviewMode = false;    
+          submitted = true;    
+          renderResult();    
+        });    
+      }    
+    }    
+    
+    function renderResult(){    
+      if (timerId){ clearInterval(timerId); timerId = null; }    
+      const s = getStats();    
+      const maxMarks = s.total * MARKS_CORRECT;    
+      const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+      let remark = percentage>=80 ? "Excellent! 💯": percentage>=60 ? "Good! 👍": percentage>=40 ? "Average. Can improve 🙂" : "Needs more practice 💪";    
+    
+      let qaHtml = "";    
+      QUESTIONS.forEach((q,i)=>{    
+        const user = answers[i];    
+        const correctIdx = q.answer;    
+        const isSkipped = user === null;    
+        const isCorrect = !isSkipped && user === correctIdx;    
+        const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` : isCorrect ? `<span class="pill-green">Correct</span>` : `<span class="pill-red">Wrong</span>`;    
+        const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+        const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+        qaHtml += `    
+          <div class="qa-card" id="qa-${i}">    
+            <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+            <div class="qa-answer-row">    
+              <div><span class="label">Your answer:</span> ${userText}</div>    
+              <div><span class="label">Correct answer:</span> ${correctText}</div>    
+              <div style="margin-left:auto">${pill}</div>    
+            </div>    
+            <div style="margin-top:8px;text-align:right">    
+              <button class="review-btn" data-q="${i}">Review Q</button>    
+            </div>    
+          </div>    
+        `;    
+      });    
+    
+      app.innerHTML = `    
+        <div class="result">    
+          <h2>GK Section Analysis – CHSL_GK_MOCK(6).html</h2>    
+          <div class="tiny">9-minute sectional mock completed</div>    
+    
+          <div class="card">    
+            <div class="card-title">Overall Performance</div>    
+            <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+            <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+            <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+            <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+            <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+            <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+            <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+          </div>    
+    
+          <div style="margin-top:8px;margin-bottom:8px">    
+            <div class="card-title">Question-wise Review</div>    
+            ${qaHtml}    
+          </div>    
+    
+          <button class="restart-btn" id="restartBtn">Retake Section</button>    
+          <div class="tiny">Timer will restart from 9 minutes</div>    
+        </div>    
+      `;    
+    
+      document.querySelectorAll(".review-btn").forEach(b=>{    
+        b.addEventListener("click", ()=>{    
+          const idx = Number(b.dataset.q);    
+          currentIndex = idx;    
+          reviewMode = true;    
+          submitted = false;    
+          isPaused = true;    
+          renderQuestion();    
+        });    
+      });    
+    
+      document.getElementById("restartBtn").addEventListener("click", ()=>{    
+        currentIndex = 0;    
+        answers = new Array(QUESTIONS.length).fill(null);    
+        timeLeft = TOTAL_TIME;    
+        submitted = false;    
+        isPaused = false;    
+        reviewMode = false;    
+        startTimer();    
+        renderQuestion();    
+      });    
+    }    
+    
+    function startTimer(){    
+      if (timerId) clearInterval(timerId);    
+      timerId = setInterval(()=>{    
+        if (!isPaused && !submitted && !reviewMode){    
+          timeLeft--;    
+          if (timeLeft <= 0){    
+            submitted = true;    
+            reviewMode = false;    
+            renderResult();    
+            return;    
+          }    
+          const el = document.querySelector(".timer");    
+          if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+        } else {    
+          const el = document.querySelector(".timer");    
+          if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+        }    
+      }, 1000);    
+    }    
+    
+    startTimer();    
+    renderQuestion();    
+  </script>  </body>    </html>    

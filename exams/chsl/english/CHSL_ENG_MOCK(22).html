@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>English Sectional Mock</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+/* English Sectional Mock – 13 Minutes */
+const TOTAL_TIME = 13 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+  {
+    q: "Identify the part of the sentence that contains a grammatical error.\nIt is imperative that he understands the severity of the situation and that he makes a clear, concise, and decisive statement to the press.",
+    options: [
+      "It is imperative that he",
+      "understands the severity of the situation",
+      "and that he makes",
+      "a clear, concise, and decisive statement to the press"
+    ],
+    answer: 2
+  },
+  {
+    q: "Identify the part of the sentence that contains a grammatical error.\nThe new employee seems to be a fast learner and more smarter than the last one.",
+    options: [
+      "The new employee",
+      "seems to be",
+      "a fast learner",
+      "and more smarter than the last one"
+    ],
+    answer: 3
+  },
+  {
+    q: "Fill in the blank with the most appropriate preposition:\nShe persisted ____ all obstacles and criticism, proving her detractors wrong.",
+    options: ["against", "across", "through", "despite"],
+    answer: 2
+  },
+  {
+    q: "Fill in the blank with the most appropriate phrasal verb:\nThe startup failed to ____ the expectations it had generated among investors.",
+    options: ["live down", "live through", "live up to", "live over"],
+    answer: 2
+  },
+  {
+    q: "Choose the correctly spelt word:",
+    options: ["Adversity", "Advercity", "Adversity", "Advertci"],
+    answer: 0
+  },
+  {
+    q: "Which of the following sentences uses the word “tear” with the same meaning as in the sentence?\nA single tear rolled down her cheek.",
+    options: [
+      "He carefully tried not to tear the delicate fabric.",
+      "The little girl’s tear brought her mother running.",
+      "Be careful not to tear the pages of the old book.",
+      "The sharp edge of the paper can easily tear when handled roughly."
+    ],
+    answer: 1
+  },
+  {
+    q: "Choose the correctly spelt word:",
+    options: ["Precurious", "Pricarious", "Precarus", "Precarious"],
+    answer: 3
+  },
+  {
+    q: "PASSAGE:\nOne of the biggest ethical dilemmas of the twenty-first century is brought up by the integration of artificial intelligence (AI) into modern combat, particularly in the form of autonomous weapon systems (AWS). The promise of strategic advantage is pitted against fundamental ethical principles in the fiercely debated issue of whether or not such “killer robots” should be allowed in combat.\n\nSupporters contend that autonomous weapons might decrease the loss of human life, since they do not fear, become tired, or suffer emotional stress that can cause human mistakes in combat. They also might be able to operate with more accuracy and rapidity in an unpredictable environment, which could decrease civilian casualties.\n\nThe ethical arguments are serious, nonetheless. The most compelling argument is the transfer of the life-and-death decision-making from a human to a machine. Opponents contend that a computer, however sophisticated, could never have the moral calculus, compassion, or comprehension of human dignity to make such judgments. This creates an important question of accountability: in the event that an autonomous weapon kills without authorisation, who has the moral and legal culpability?\n\nThe secrecy of AI’s decision-making process, commonly known as a “black box,” also adds to the difficulty in assigning blame. This built-in absence of clear moral and legal norms tests the very foundations of the international laws of armed conflict.\n\nWhich of the following is the most compelling ethical argument against autonomous weapons in combat?",
+    options: [
+      "The potential for increased civilian casualties",
+      "The speed at which autonomous weapons operate",
+      "The transfer of life-and-death decision-making to machines",
+      "The lack of accountability in AI decisions"
+    ],
+    answer: 2
+  },
+  {
+    q: "According to the passage, what is the primary concern regarding the integration of AI into modern warfare?",
+    options: [
+      "The technology will never be able to operate in war zones",
+      "Autonomous weapons may lack the moral responsibility to make life-and-death decisions",
+      "It would be illegal under international laws of armed conflict",
+      "AI could be hacked and used against states"
+    ],
+    answer: 1
+  },
+  {
+    q: "In the passage, the term “moral calculus” refers to:",
+    options: [
+      "A complex mathematical process",
+      "The ability to make ethical decisions",
+      "The calculation of military strategies",
+      "The efficiency of AI systems in combat"
+    ],
+    answer: 1
+  },
+  {
+    q: "What is the primary ethical concern raised by the “black box” nature of AI decision-making in AWS?",
+    options: [
+      "It increases the speed of decision-making",
+      "It hinders military efficiency",
+      "It makes it difficult to assign moral and legal culpability",
+      "It reduces the potential for civilian casualties"
+    ],
+    answer: 2
+  },
+  {
+    q: "Which argument in favor of autonomous weapons is most strongly supported by proponents?",
+    options: [
+      "They help reduce civilian casualties",
+      "They can create more humane warfare",
+      "They ensure that no human is ever at risk in combat",
+      "They act with more accuracy and rapidity"
+    ],
+    answer: 3
+  },
+  {
+    q: "Choose the correct meaning of the idiom: Below the belt",
+    options: [
+      "Hitting someone lightly",
+      "Doing something with great care",
+      "A punch in boxing",
+      "Unfair or unjust behavior"
+    ],
+    answer: 3
+  },
+  {
+    q: "Choose the correct meaning of the idiom: Star-crossed lovers",
+    options: [
+      "Lovers whose relationship is doomed",
+      "Lovers facing many challenges",
+      "Very successful lovers",
+      "Happy lovers"
+    ],
+    answer: 0
+  },
+  {
+    q: "Select the most appropriate antonym of the word: Sporadic",
+    options: ["Infrequent", "Occasional", "Frequent", "Intermittent"],
+    answer: 2
+  },
+  {
+    q: "Choose the correct one-word substitute for:\nA place where dead bodies are kept for examination",
+    options: ["Cemetery", "Morgue", "Hospital", "Clinic"],
+    answer: 1
+  },
+  {
+    q: "Select the most appropriate antonym of the word: Fastidious",
+    options: ["Meticulous", "Sloppy", "Fussy", "Perceptive"],
+    answer: 1
+  },
+  {
+    q: "Choose the correct one-word substitute for:\nA person who performs magic tricks",
+    options: ["Magician", "Sorcerer", "Wizard", "Illusionist"],
+    answer: 3
+  },
+  {
+    q: "Change the following sentence into the Active form:\nThe city council’s decision is thought to be influenced by powerful lobbying groups.",
+    options: [
+      "Powerful lobbying groups think that the city council’s decision is influenced.",
+      "Powerful lobbying groups are thought to influence the city council’s decision.",
+      "People think that powerful lobbying groups influence the city council’s decision.",
+      "The city council thinks that powerful lobbying groups influence the decision."
+    ],
+    answer: 2
+  },
+  {
+    q: "Select the option that expresses the given sentence in indirect voice.\nThe guide said, “We will be exploring the ruins all morning.”",
+    options: [
+      "The guide said that they would be exploring the ruins all morning.",
+      "The guide said that they will be exploring the ruins all morning.",
+      "The guide said that we would be exploring the ruins all morning.",
+      "The guide said that they were exploring the ruins all morning."
+    ],
+    answer: 0
+  },
+  {
+    q: "Choose the most suitable option to replace the highlighted part of the sentence:\nExcept for you and me, no one knew Radha.",
+    options: [
+      "Except for you and I, no one knew Radha",
+      "Except for you and me, no one knew Radha",
+      "Except you and I, no one knew Radha",
+      "Except for I and you, no one knew Radha"
+    ],
+    answer: 1
+  },
+  {
+    q: "Choose the correct passive voice transformation of the sentence:\nWhy did the brilliant detective suddenly solve the complex mystery?",
+    options: [
+      "Why was the complex mystery suddenly solved by the brilliant detective?",
+      "Why has the complex mystery suddenly been solved by the brilliant detective?",
+      "Why did the complex mystery be solved by the brilliant detective?",
+      "Why did the complex mystery solved by the brilliant detective?"
+    ],
+    answer: 0
+  },
+  {
+    q: "Select the option that expresses the given sentence in direct voice.\nThe traveler explained that he was going to visit several historic sites on his trip.",
+    options: [
+      "The traveler said, “He was going to visit several historic sites on his trip.”",
+      "The traveler said, “He is going to visit several historic sites on his trip.”",
+      "The traveler explained, “I was going to visit several historic sites on my trip.”",
+      "The traveler said, “I am going to visit several historic sites on my trip.”"
+    ],
+    answer: 3
+  },
+  {
+    q: "Rearrange the following sentences to form a meaningful and grammatically correct paragraph.\nP. He disassembled the old engine with care, marking each component precisely.\nQ. He torqued the bolts to the precise specifications, put in new gaskets, and replaced old parts.\nR. After reassembling the engine, he put it back in the vehicle and reattached all of the hoses.\nS. On the first turn of the key, the engine flickered to life and resumed its flawless operation.",
+    options: ["R, Q, P, S", "P, Q, R, S", "S, Q, R, P", "Q, P, R, S"],
+    answer: 1
+  },
+  {
+    q: "Rearrange the following sentences to form a meaningful and grammatically correct paragraph.\nP. As a result, the software significantly improved operational efficiency across departments.\nQ. The team worked tirelessly, refining the code and testing each feature for compatibility.\nR. It was designed to simplify daily tasks and provide real-time data analysis.\nS. A groundbreaking new software was developed to streamline workflow and increase productivity.",
+    options: ["S, R, Q, P", "P, R, Q, S", "R, S, Q, P", "S, P, Q, R"],
+    answer: 0
+  }
+];
+// State    
+let currentIndex = 0;    
+let answers = new Array(QUESTIONS.length).fill(null);     
+let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+let timeLeft = TOTAL_TIME;    
+let timerId = null;    
+let submitted = false;    
+let isPaused = false;    
+let reviewMode = false; // true when user is viewing a single question from analysis    
+const app = document.getElementById("app");    
+
+function formatTime(sec){ 
+  const m = Math.floor(sec/60), s = sec%60; 
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; 
+}    
+
+function getStats(){    
+  const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+  QUESTIONS.forEach((q,i)=>{    
+    const a = answers[i];    
+    if (a !== null){    
+      s.attempted++;    
+      if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+      else { s.wrong++; s.marks += MARKS_WRONG; }    
+    }    
+  });    
+  return s;    
+}    
+
+function renderQuestion(){    
+  if (reviewMode) isPaused = true;    
+  if (submitted && !reviewMode){ renderResult(); return; }    
+
+  const q = QUESTIONS[currentIndex];    
+  const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+  const selected = answers[currentIndex];    
+
+  const stripHtml = QUESTIONS.map((_,idx)=>{    
+    let cls = "qchip";    
+    if (idx===currentIndex) cls += " current";    
+    if (answers[idx] !== null) cls += " answered";    
+    if (reviewed[idx]) cls += " reviewed";    
+    return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+  }).join("");    
+
+  app.innerHTML = `    
+    <div class="header">    
+      <div class="title">English Sectional Mock</div>    
+      <div class="timer-wrap">    
+        <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+        <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+      </div>    
+    </div>    
+
+    <div class="subheader">    
+      <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+      <span class="badge">English</span>    
+    </div>    
+
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width:${progressPercent}%"></div>
+    </div>    
+
+    <div class="q-strip">
+      <div class="q-strip-inner">${stripHtml}</div>
+    </div>    
+
+    <div class="section-tag">English</div>    
+
+    <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+
+    <div class="options">    
+      ${q.options.map((opt,idx)=>{    
+        let classes = "";    
+        if (selected === idx && !reviewMode) classes = "selected";    
+        if (reviewMode){    
+          if (idx === q.answer) classes = "correct";    
+          else if (selected === idx && selected !== q.answer) classes = "wrong";    
+        } else {    
+          if (selected === idx) classes = "selected";    
+        }    
+        return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+      }).join("")}    
+    </div>    
+
+    <div class="footer">    
+      <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+      <div class="nav-buttons">    
+        <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+        ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+        <button class="nav-btn" id="markBtn">Mark</button>    
+        <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+      </div>    
+    </div>    
+  `;    
+
+  document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+    if (reviewMode){ isPaused = true; renderQuestion(); return; }    
+    isPaused = !isPaused;    
+    renderQuestion();    
+  });    
+
+  document.querySelectorAll(".qchip").forEach(b=>{    
+    b.addEventListener("click", ()=>{ 
+      currentIndex = Number(b.dataset.q); 
+      reviewMode = false; 
+      renderQuestion(); 
+    });    
+  });    
+
+  document.querySelectorAll(".option-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.index);    
+      if (reviewMode) return;    
+      answers[currentIndex] = idx;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{    
+    if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+  });    
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{    
+    if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+    else { submitted = true; reviewMode = false; renderResult(); }    
+  });    
+
+  const markBtnEl = document.getElementById('markBtn');    
+  if (markBtnEl){    
+    markBtnEl.addEventListener('click', ()=>{    
+      reviewed[currentIndex] = !reviewed[currentIndex];    
+      markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+      renderQuestion();    
+    });    
+  }    
+
+  const back = document.getElementById("backAnalysis");    
+  if (back){    
+    back.addEventListener("click", ()=>{    
+      reviewMode = false;    
+      submitted = true;    
+      renderResult();    
+    });    
+  }    
+}    
+
+function renderResult(){    
+  if (timerId){ clearInterval(timerId); timerId = null; }    
+  const s = getStats();    
+  const maxMarks = s.total * MARKS_CORRECT;    
+  const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+  let remark = percentage>=80 ? "Excellent! 💯"
+             : percentage>=60 ? "Good! 👍"
+             : percentage>=40 ? "Average. Can improve 🙂"
+             : "Needs more practice 💪";    
+
+  let qaHtml = "";    
+  QUESTIONS.forEach((q,i)=>{    
+    const user = answers[i];    
+    const correctIdx = q.answer;    
+    const isSkipped = user === null;    
+    const isCorrect = !isSkipped && user === correctIdx;    
+    const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` 
+               : isCorrect ? `<span class="pill-green">Correct</span>` 
+               : `<span class="pill-red">Wrong</span>`;    
+
+    const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+    const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+
+    qaHtml += `    
+      <div class="qa-card" id="qa-${i}">    
+        <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+        <div class="qa-answer-row">    
+          <div><span class="label">Your answer:</span> ${userText}</div>    
+          <div><span class="label">Correct answer:</span> ${correctText}</div>    
+          <div style="margin-left:auto">${pill}</div>    
+        </div>    
+        <div style="margin-top:8px;text-align:right">    
+          <button class="review-btn" data-q="${i}">Review Q</button>    
+        </div>    
+      </div>    
+    `;    
+  });    
+
+  app.innerHTML = `    
+    <div class="result">    
+      <h2>English Section Analysis</h2>    
+      <div class="tiny">9-minute sectional mock completed</div>    
+
+      <div class="card">    
+        <div class="card-title">Overall Performance</div>    
+        <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+        <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+        <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+        <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+        <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+        <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+        <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+      </div>    
+
+      <div style="margin-top:8px;margin-bottom:8px">    
+        <div class="card-title">Question-wise Review</div>    
+        ${qaHtml}    
+      </div>    
+
+      <button class="restart-btn" id="restartBtn">Retake Section</button>    
+      <div class="tiny">Timer will restart from 9 minutes</div>    
+    </div>    
+  `;    
+
+  document.querySelectorAll(".review-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.q);    
+      currentIndex = idx;    
+      reviewMode = true;    
+      submitted = false;    
+      isPaused = true;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("restartBtn").addEventListener("click", ()=>{    
+    currentIndex = 0;    
+    answers = new Array(QUESTIONS.length).fill(null);    
+    timeLeft = TOTAL_TIME;    
+    submitted = false;    
+    isPaused = false;    
+    reviewMode = false;    
+    startTimer();    
+    renderQuestion();    
+  });    
+}    
+
+function startTimer(){    
+  if (timerId) clearInterval(timerId);    
+  timerId = setInterval(()=>{    
+    if (!isPaused && !submitted && !reviewMode){    
+      timeLeft--;    
+      if (timeLeft <= 0){    
+        submitted = true;    
+        reviewMode = false;    
+        renderResult();    
+        return;    
+      }    
+    }    
+    const el = document.querySelector(".timer");    
+    if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+  }, 1000);    
+}    
+
+startTimer();    
+renderQuestion();
+</script>  </body>    </html>

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>English Sectional Mock</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+/* English Sectional Mock – 13 Minutes */
+const TOTAL_TIME = 13 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+  {
+    q: "Identify the incorrect sentence.",
+    options: [
+      "Injured were taken to the hospital.",
+      "The baby laughed on seeing itself in the mirror.",
+      "Whose book is this?",
+      "Shakespeare was the most prolific writer that time has ever seen."
+    ],
+    answer: 0
+  },
+  {
+    q: "Fill in the blank with the most appropriate preposition:\nThe solution is not compatible ___ older versions of the software.",
+    options: ["for", "to", "with", "at"],
+    answer: 2
+  },
+  {
+    q: "Fill in the blank with the most appropriate phrasal verb:\nShe always ___ her failures to bad luck rather than taking ownership.",
+    options: ["puts down", "turns out", "breaks into", "boils down"],
+    answer: 3
+  },
+  {
+    q: "Choose the correctly spelt word:",
+    options: ["Quarantine", "Quarentine", "Quaranteen", "Quarintine"],
+    answer: 0
+  },
+  {
+    q: "Select the sentence containing the homonym of the highlighted word:\nTheir first date was at an art exhibition.",
+    options: [
+      "I need to check the expiry date on this milk carton.",
+      "They agreed to go on a second date after their coffee meeting.",
+      "He invited her to a dinner date at his favorite restaurant.",
+      "The movie was a great choice for a first date."
+    ],
+    answer: 0
+  },
+  {
+    q: "Select the most appropriate antonym of the word Amplify.",
+    options: ["Expand", "Magnify", "Reduce", "Increase"],
+    answer: 2
+  },
+  {
+    q: "Choose the most suitable option to replace the highlighted part of the sentence:\nMy mother gave us some cake to eat it.",
+    options: ["to eat", "to eat it", "eating it", "eat it"],
+    answer: 0
+  },
+  {
+    q: "Choose the correct indirect narration of the following statement:\nShe said, “I can come here tomorrow morning if my mother does not want me to go for shopping.”",
+    options: [
+      "She said that she can go there the next morning if her mother did not want her to go for shopping.",
+      "She said that she could go there the following morning if her mother did not want her to go for shopping.",
+      "She said that she could go there the following morning if her mother does not want her to go for shopping.",
+      "She said that she went there the following morning if her mother does not want her to go for shopping."
+    ],
+    answer: 1
+  },
+  {
+    q: "Choose the correct indirect narration of the following statement:\nThe students said to the teacher, “What is the proper way to write a report when there is no details mentioned in the question?”",
+    options: [
+      "The students asked the teacher what had been the proper way to write a report when there was no details mentioned in the question.",
+      "The students asked the teacher what was the proper way to write a report when there was no details mentioned in the question.",
+      "The students asked the teacher what had to be the proper way to write a report when there was no details mentioned in the question.",
+      "The students asked the teacher what was being the proper way to write a report when there was no details mentioned in the question."
+    ],
+    answer: 1
+  },
+  {
+    q: "Change the following sentence into the Active form:\nIt has been determined that the ancient artifact is authentic.",
+    options: [
+      "The ancient artifact is authentic.",
+      "Experts have determined that the ancient artifact is authentic.",
+      "It was determined that the ancient artifact is authentic.",
+      "The authenticity of the ancient artifact has been determined."
+    ],
+    answer: 1
+  },
+  {
+    q: "Choose the option that is the most appropriate conversion of the following sentence into Direct Speech:\nShe exclaimed with disgust that the food tasted terrible.",
+    options: [
+      "She said, “Alas! This food tastes terrible.”",
+      "She said, “Ugh! How terrible this food tastes!”",
+      "She exclaimed, “Oh no! This food tastes terrible!”",
+      "She exclaimed, “What terrible-tasting food?”"
+    ],
+    answer: 1
+  },
+  {
+    q: "Fill in the blank with the correctly spelt word:\n“Regular ___ of the company’s complex machinery is essential to prevent costly breakdowns and ensure uninterrupted production.”",
+    options: ["maintainance", "maintenance", "maintanance", "maintenence"],
+    answer: 1
+  },
+  {
+    q: "Change the following sentence into the Active form:\nLet no stone be left unturned in the search for the missing documents.",
+    options: [
+      "Don’t leave a stone unturned in the search for the missing documents.",
+      "No stone should be left unturned in the search for the missing documents.",
+      "Leave no stone unturned in the search for the missing documents.",
+      "No stone is left unturned in the search for the missing documents."
+    ],
+    answer: 2
+  },
+  {
+    q: "Choose the incorrect spelling:",
+    options: ["Bureaucracy", "Garrulous", "Refrigerator", "Acquiesce"],
+    answer: 3
+  },
+  {
+    q: "Which sentence contains a misspelled word?",
+    options: [
+      "In order to advance within the company’s hierarchy, employees must acquire new skills.",
+      "She hoped to aquire the experience necessary to move up the strict corporate hierarchy.",
+      "The team needed to acquire additional funding to navigate the complex hierarchy of approvals.",
+      "He worked hard to acquire a position high in the organization’s hierarchy."
+    ],
+    answer: 1
+  },
+  {
+    q: "Select the option that expresses the given sentence in direct voice:\nMy mother lovingly asked me if I was going to the party that night.",
+    options: [
+      "My mother asked me, “Are you going to the party tonight?”",
+      "My mother said to me, “Were you going to the party that night?”",
+      "My mother said to me, “Were you going to the party that night?”",
+      "My mother asked, “Are you going to the party that night?”"
+    ],
+    answer: 0
+  },
+  {
+    q: "Select the option that expresses the given sentence in direct voice:\nThe coach told the athletes that they had been training hard all season and deserved a break.",
+    options: [
+      "The coach said, “You were training hard all season and deserved a break.”",
+      "The coach told the athletes, “You had been training hard all season and deserved a break.”",
+      "The coach said to the athletes, “You have been training hard all season and deserve a break.”",
+      "The coach told the athletes, “They had been training hard all season and deserved a break.”"
+    ],
+    answer: 2
+  },
+  {
+    q: "Choose the correct passive voice transformation of the sentence:\nThe government is to launch an extensive investigation into the alleged financial irregularities.",
+    options: [
+      "An extensive investigation is to be launched into the alleged financial irregularities by the government.",
+      "The alleged financial irregularities are to be extensively investigated by the government.",
+      "An extensive investigation will be launched into the alleged financial irregularities by the government.",
+      "It is intended by the government to launch an extensive investigation into the alleged financial irregularities."
+    ],
+    answer: 0
+  },
+  {
+    q: "PASSAGE (Q19–Q23)\nThe National Education Policy (NEP) 2020 is one of the most significant educational reforms introduced in India in recent decades. It aims to transform the education system to make it more holistic, flexible, multidisciplinary, and aligned with the needs of the 21st century. The policy replaces the 10+2 structure with a new 5+3+3+4 system, which focuses on the foundational stage and encourages critical thinking from an early age.\nOne of the key effects of the NEP is the emphasis on mother tongue or regional language as the medium of instruction at the primary level. This has generated both appreciation and concern. While experts believe it will strengthen children’s roots and understanding, some worry about challenges in implementation and the impact on English language proficiency.\nFurthermore, the NEP promotes vocational education, digital literacy, and interdisciplinary studies. It aims to reduce rote learning and exams-centric approaches by encouraging practical knowledge and creativity. If implemented effectively, the NEP could reshape India’s educational landscape for generations to come.\n\nIdentify the sentence that contains a modal verb to express possibility.",
+    options: [
+      "The policy replaces the 10+2 structure with a new 5+3+3+4 system.",
+      "It aims to reduce rote learning and exams-centric approaches.",
+      "While experts believe it will strengthen children’s roots and understanding.",
+      "If implemented effectively, the NEP could reshape India’s educational landscape."
+    ],
+    answer: 3
+  },
+  {
+    q: "Which of the following words from the passage is a gerund?",
+    options: ["Reshape", "Learning", "Emphasis", "Replace"],
+    answer: 1
+  },
+  {
+    q: "What is the meaning of the word holistic as used in the passage?",
+    options: [
+      "Related to health and medicine",
+      "Limited to academic learning only",
+      "Considering all parts as interconnected and complete",
+      "Focused only on one subject"
+    ],
+    answer: 2
+  },
+  {
+    q: "Choose the correct antonym for the word flexible as used in the passage.",
+    options: ["Adjustable", "Rigid", "Easy", "Clear"],
+    answer: 1
+  },
+  {
+    q: "Which is a key goal of the NEP according to the passage?",
+    options: [
+      "To remove regional languages from schools",
+      "To increase rote learning",
+      "To encourage practical and creative learning",
+      "To focus only on English"
+    ],
+    answer: 2
+  },
+  {
+    q: "Which word can best replace sarcasm?\nThe stranger’s eyes sparkled with a mixture of challenge and sarcasm.",
+    options: ["Kindness", "Mockery", "Encouragement", "Compliment"],
+    answer: 1
+  },
+  {
+    q: "Which word refers to graceful and balanced behavior?",
+    options: ["Clumsy", "Poise", "Grit", "Frenzy"],
+    answer: 1
+  }
+];
+// State    
+let currentIndex = 0;    
+let answers = new Array(QUESTIONS.length).fill(null);     
+let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+let timeLeft = TOTAL_TIME;    
+let timerId = null;    
+let submitted = false;    
+let isPaused = false;    
+let reviewMode = false; // true when user is viewing a single question from analysis    
+const app = document.getElementById("app");    
+
+function formatTime(sec){ 
+  const m = Math.floor(sec/60), s = sec%60; 
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; 
+}    
+
+function getStats(){    
+  const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+  QUESTIONS.forEach((q,i)=>{    
+    const a = answers[i];    
+    if (a !== null){    
+      s.attempted++;    
+      if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+      else { s.wrong++; s.marks += MARKS_WRONG; }    
+    }    
+  });    
+  return s;    
+}    
+
+function renderQuestion(){    
+  if (reviewMode) isPaused = true;    
+  if (submitted && !reviewMode){ renderResult(); return; }    
+
+  const q = QUESTIONS[currentIndex];    
+  const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+  const selected = answers[currentIndex];    
+
+  const stripHtml = QUESTIONS.map((_,idx)=>{    
+    let cls = "qchip";    
+    if (idx===currentIndex) cls += " current";    
+    if (answers[idx] !== null) cls += " answered";    
+    if (reviewed[idx]) cls += " reviewed";    
+    return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+  }).join("");    
+
+  app.innerHTML = `    
+    <div class="header">    
+      <div class="title">English Sectional Mock</div>    
+      <div class="timer-wrap">    
+        <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+        <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+      </div>    
+    </div>    
+
+    <div class="subheader">    
+      <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+      <span class="badge">English</span>    
+    </div>    
+
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width:${progressPercent}%"></div>
+    </div>    
+
+    <div class="q-strip">
+      <div class="q-strip-inner">${stripHtml}</div>
+    </div>    
+
+    <div class="section-tag">English</div>    
+
+    <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+
+    <div class="options">    
+      ${q.options.map((opt,idx)=>{    
+        let classes = "";    
+        if (selected === idx && !reviewMode) classes = "selected";    
+        if (reviewMode){    
+          if (idx === q.answer) classes = "correct";    
+          else if (selected === idx && selected !== q.answer) classes = "wrong";    
+        } else {    
+          if (selected === idx) classes = "selected";    
+        }    
+        return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+      }).join("")}    
+    </div>    
+
+    <div class="footer">    
+      <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+      <div class="nav-buttons">    
+        <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+        ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+        <button class="nav-btn" id="markBtn">Mark</button>    
+        <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+      </div>    
+    </div>    
+  `;    
+
+  document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+    if (reviewMode){ isPaused = true; renderQuestion(); return; }    
+    isPaused = !isPaused;    
+    renderQuestion();    
+  });    
+
+  document.querySelectorAll(".qchip").forEach(b=>{    
+    b.addEventListener("click", ()=>{ 
+      currentIndex = Number(b.dataset.q); 
+      reviewMode = false; 
+      renderQuestion(); 
+    });    
+  });    
+
+  document.querySelectorAll(".option-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.index);    
+      if (reviewMode) return;    
+      answers[currentIndex] = idx;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{    
+    if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+  });    
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{    
+    if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+    else { submitted = true; reviewMode = false; renderResult(); }    
+  });    
+
+  const markBtnEl = document.getElementById('markBtn');    
+  if (markBtnEl){    
+    markBtnEl.addEventListener('click', ()=>{    
+      reviewed[currentIndex] = !reviewed[currentIndex];    
+      markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+      renderQuestion();    
+    });    
+  }    
+
+  const back = document.getElementById("backAnalysis");    
+  if (back){    
+    back.addEventListener("click", ()=>{    
+      reviewMode = false;    
+      submitted = true;    
+      renderResult();    
+    });    
+  }    
+}    
+
+function renderResult(){    
+  if (timerId){ clearInterval(timerId); timerId = null; }    
+  const s = getStats();    
+  const maxMarks = s.total * MARKS_CORRECT;    
+  const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+  let remark = percentage>=80 ? "Excellent! 💯"
+             : percentage>=60 ? "Good! 👍"
+             : percentage>=40 ? "Average. Can improve 🙂"
+             : "Needs more practice 💪";    
+
+  let qaHtml = "";    
+  QUESTIONS.forEach((q,i)=>{    
+    const user = answers[i];    
+    const correctIdx = q.answer;    
+    const isSkipped = user === null;    
+    const isCorrect = !isSkipped && user === correctIdx;    
+    const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` 
+               : isCorrect ? `<span class="pill-green">Correct</span>` 
+               : `<span class="pill-red">Wrong</span>`;    
+
+    const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+    const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+
+    qaHtml += `    
+      <div class="qa-card" id="qa-${i}">    
+        <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+        <div class="qa-answer-row">    
+          <div><span class="label">Your answer:</span> ${userText}</div>    
+          <div><span class="label">Correct answer:</span> ${correctText}</div>    
+          <div style="margin-left:auto">${pill}</div>    
+        </div>    
+        <div style="margin-top:8px;text-align:right">    
+          <button class="review-btn" data-q="${i}">Review Q</button>    
+        </div>    
+      </div>    
+    `;    
+  });    
+
+  app.innerHTML = `    
+    <div class="result">    
+      <h2>English Section Analysis</h2>    
+      <div class="tiny">9-minute sectional mock completed</div>    
+
+      <div class="card">    
+        <div class="card-title">Overall Performance</div>    
+        <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+        <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+        <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+        <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+        <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+        <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+        <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+      </div>    
+
+      <div style="margin-top:8px;margin-bottom:8px">    
+        <div class="card-title">Question-wise Review</div>    
+        ${qaHtml}    
+      </div>    
+
+      <button class="restart-btn" id="restartBtn">Retake Section</button>    
+      <div class="tiny">Timer will restart from 9 minutes</div>    
+    </div>    
+  `;    
+
+  document.querySelectorAll(".review-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.q);    
+      currentIndex = idx;    
+      reviewMode = true;    
+      submitted = false;    
+      isPaused = true;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("restartBtn").addEventListener("click", ()=>{    
+    currentIndex = 0;    
+    answers = new Array(QUESTIONS.length).fill(null);    
+    timeLeft = TOTAL_TIME;    
+    submitted = false;    
+    isPaused = false;    
+    reviewMode = false;    
+    startTimer();    
+    renderQuestion();    
+  });    
+}    
+
+function startTimer(){    
+  if (timerId) clearInterval(timerId);    
+  timerId = setInterval(()=>{    
+    if (!isPaused && !submitted && !reviewMode){    
+      timeLeft--;    
+      if (timeLeft <= 0){    
+        submitted = true;    
+        reviewMode = false;    
+        renderResult();    
+        return;    
+      }    
+    }    
+    const el = document.querySelector(".timer");    
+    if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+  }, 1000);    
+}    
+
+startTimer();    
+renderQuestion();
+</script>  </body>    </html>

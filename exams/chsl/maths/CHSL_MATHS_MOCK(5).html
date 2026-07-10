@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHSL Maths Sectional Mock (25Q)</title>
+
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:14px}
+.container{max-width:520px;width:100%;background:#fff;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08);padding:18px}
+
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.title{font-size:17px;font-weight:600}
+.timer{background:#111827;color:#fff;padding:5px 12px;border-radius:999px;font-size:13px}
+
+.sub{font-size:12px;color:#6b7280;margin-bottom:8px;display:flex;justify-content:space-between}
+.badge{background:#e5e7eb;border-radius:999px;padding:2px 8px}
+
+.q-strip{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.q-strip::-webkit-scrollbar{display:none}
+.qchip{min-width:26px;height:26px;border-radius:50%;border:1px solid #d1d5db;font-size:11px;background:#f9fafb}
+.qchip.current{background:#111827;color:#fff}
+.qchip.answered{background:#dbeafe;color:#1d4ed8}
+.qchip.reviewed{background:rebeccapurple;color:#fff}
+
+.question{font-size:15px;margin-bottom:10px;white-space:pre-line}
+.options{display:grid;gap:8px}
+.option{border:1px solid #d1d5db;border-radius:999px;padding:9px 14px;text-align:left;font-size:14px;background:#fff}
+.option.selected{background:#2563eb;color:#fff}
+.option.correct{background:#dcfce7;color:#166534}
+.option.wrong{background:#fee2e2;color:#b91c1c}
+
+.footer{margin-top:14px;display:flex;gap:6px}
+.btn{border:none;border-radius:999px;padding:9px 12px;font-size:13px}
+.btn.gray{background:#e5e7eb}
+.btn.dark{background:#111827;color:#fff;flex:1}
+.back-btn{background:#6b7280;color:#fff}
+
+.result h2{text-align:center}
+.card{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:8px}
+.qa{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:6px}
+.pill{border-radius:999px;padding:3px 8px;font-size:12px}
+.green{background:#dcfce7}
+.red{background:#fee2e2}
+.gray{background:#e5e7eb}
+
+.review-btn{margin-left:auto;background:#111827;color:#fff;border:none;border-radius:999px;padding:5px 10px;font-size:12px}
+.restart{width:100%;margin-top:10px;padding:10px;border:none;border-radius:999px;background:#2563eb;color:#fff}
+</style>
+</head>
+
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const TOTAL_TIME = 25*60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+
+/* ===== QUESTIONS (EXACT TEXT) ===== */
+const QUESTIONS = [
+{q:`A man purchased 3 identical electric fans at a total cost of ₹4,320. He sold two of them at a gain of 15% each and the third one at a loss of 10%. What is his overall profit or loss percentage?`,
+options:["5% Profit","6.25% Profit","6.67% Profit","7% Profit"],answer:2},
+
+{q:`Sheela gets a discount of 25% on a ₹10,000 oven. Since she pays cash, she gets an additional 2% discount too. How much does she pay?`,
+options:["₹7000","₹7250","₹7350","₹7500"],answer:2},
+
+{q:`The selling price of a vintage vase is ₹1800, and the discount given is 4%. What is the marked price of the vase?`,
+options:["1768","1700","1850","1875"],answer:3},
+
+{q:`A school had 120 students with an average age of 20 years. Later, a new batch of students joined. After their inclusion, the average age became 19.5 years, even though the newcomers had an average age of 18 years. Find the number of students in the new batch.`,
+options:["30","35","40","45"],answer:2},
+
+{q:`A construction project was estimated to be completed in 180 days. Due to rain, only 60% of the days were productive. If the work done each productive day is constant, by what percent must daily output be increased to complete the project on time?`,
+options:["60.65%","65%","70.43%","66.67%"],answer:3},
+
+{q:`In a survey conducted at a university, it was found that 55% of the students like Mathematics, 45% like Physics, and 30% like both Mathematics and Physics. Among the remaining students, 25% prefer Computer Science, while the rest have no preference. If the total number of students surveyed is 800, how many students have no preference for any of the three subjects?`,
+options:["160","200","220","180"],answer:3},
+
+{q:`Which of the following numbers is NOT a perfect square?`,
+options:["900","441","729","640"],answer:3},
+
+{q:`Two investors, A and B, invest in the business in the ratio of 4:5. If the share of B is ₹1000 in profit, find the total profit.`,
+options:["1700","1800","1900","2000"],answer:1},
+
+{q:`A, B, and C invest ₹18,000, ₹12,000, and ₹20,000 respectively for a year. What percentage of the total profit will C get?`,
+options:["20%","30%","40%","50%"],answer:2},
+
+{q:`A and B invest ₹20,000 and ₹30,000 in a business. B receives ₹1000 more than A from the annual profit. What is the total profit?`,
+options:["₹4000","₹5000","₹6000","₹7000"],answer:1},
+
+{q:`A circular field is surrounded by a path of uniform width 2.5 m. The total area of the field including the path is 1078.125 m². If the area of the circular field excluding the path is 803.25 m², find the radius of the circular field and the radius including the path. (Use π = 3.1416)`,
+options:["15.50 m, 18.00 m","15.99 m, 18.49 m","16.20 m, 18.70 m","14.00 m, 16.50 m"],answer:1},
+
+{q:`If (m − n) = 4 and (m³ − n³) = 1216, then find the value of (m × n).`,
+options:["89","96","75","91"],answer:1},
+
+{q:`If x + y = 24 and x² + y² = 360, then find the value of (x⁴ + x²y² + y⁴).`,
+options:["1,17,936","1,25,878","1,24,784","2,15,869"],answer:0},
+
+{q:`If sin x + sin² x = 1, then find the value of cos² x + cos⁴ x.`,
+options:["2","0","1","−1"],answer:2},
+
+{q:`If 2 × sin q × cos(90° − q) = 1/2, such that 0° < q < 90°, then find the value of cot² 2q + cos² 3q.`,
+options:["1/7","1/2","1/5","1/3"],answer:3},
+
+{q:`A firefighter’s ladder of length 41 meters is resting against a wall and makes an angle x with the horizontal distance of the foot of the ladder from the wall. If sin x = 40/41, find the horizontal distance.`,
+options:["9 meters","5 meters","6 meters","12 meters"],answer:0},
+
+{q:`₹12,000 is invested at the rate of 8% p.a. for 4 years at simple interest in scheme ‘A’. The amount received from scheme ‘A’ is then invested for 2 years at 5% p.a., compounded annually in scheme ‘B’. Find the amount received from scheme ‘B’.`,
+options:["₹17,463.6","₹17,677","₹11,460.5","₹17,999"],answer:0},
+
+{q:`A person invested ₹18,000 each in two different schemes for 2 years. One scheme offered 15% p.a. simple interest and the other offered 15% p.a. compound interest compounded annually. Find the difference between the interest earned from both schemes.`,
+options:["₹456","₹405","₹489","₹411"],answer:1},
+
+{q:`If ₹60,000 is invested at a compound interest of 20% p.a. for 18 months, then find the interest earned given that the sum is compounded every 6 months.`,
+options:["₹21,800","₹12,550","₹14,670","₹19,860"],answer:3},
+
+{q:`A box contains ₹5, ₹2 and ₹1 coins in the ratio 7:3:2. If the total amount in the box is ₹1075, find the number of ₹2 coins.`,
+options:["70","75","80","85"],answer:1},
+
+{q:`A tank contains liquid A and B in the ratio 13:12. 50 litres of the mixture are taken out and filled with 50 litres of B. Now the ratio changes to 7:8. Find the quantity of liquid B initially.`,
+options:["222 litres","230 litres","240 litres","234 litres"],answer:3},
+
+{q:`A mixture containing 18% of methanol is mixed with another mixture containing b% of methanol in the ratio 4:5. If the percentage of methanol in the final mixture is 16%, what is the percentage of b?`,
+options:["12.26%","14.4%","17.2%","16.32%"],answer:1},
+
+{q:`A person travels a total distance of 480 km, partly by car at a speed of 80 km/h and the rest by car at 40 km/h. If 75% of the total distance is covered by car, find the approximate average speed of the entire journey.`,
+options:["44 km/h","56 km/h","28 km/h","64 km/h"],answer:3},
+
+{q:`How many perfect squares lie between 10,000 and 20,000 (inclusive)?`,
+options:["32","42","52","62"],answer:1},
+
+{q:`A motorist travels from City P to City Q, a distance of 234 km. For the first 78 km, he drives at 52 km/h. For the next 78 km, he drives at 39 km/h. For the remaining distance, he drives at x km/h (constant). His overall average speed for the whole trip is 46.8 km/h. What is x?`,
+options:["65 km/h","72 km/h","60 km/h","52 km/h"],answer:3}
+];
+
+/* ===== SCRIPT BELOW IS UNCHANGED ===== */
+let index=0,answers=new Array(25).fill(null),
+reviewed=new Array(25).fill(false),
+timeLeft=TOTAL_TIME,submitted=false,reviewMode=false,timer,stripScroll=0;
+
+const app=document.getElementById("app");
+
+function startTimer(){
+ timer=setInterval(()=>{
+  if(!submitted && !reviewMode){
+   timeLeft--;
+   if(timeLeft<=0){submitted=true;renderResult();}
+   render();
+  }
+ },1000);
+}
+
+function render(){
+ if(submitted && !reviewMode){renderResult();return;}
+ const old=document.querySelector(".q-strip");
+ if(old) stripScroll=old.scrollLeft;
+
+ const q=QUESTIONS[index];
+ app.innerHTML=`
+ <div class="header">
+  <div class="title">Maths Sectional Mock</div>
+  <div class="timer">⏱ ${Math.floor(timeLeft/60)}:${String(timeLeft%60).padStart(2,"0")}</div>
+ </div>
+
+ <div class="sub">
+  <span>+2 / −0.5</span>
+  <span class="badge">Mathematics</span>
+ </div>
+
+ <div class="q-strip">
+ ${QUESTIONS.map((_,i)=>`<button class="qchip ${i===index?"current":""} ${answers[i]!=null?"answered":""} ${reviewed[i]?"reviewed":""}" onclick="jump(${i})">${i+1}</button>`).join("")}
+ </div>
+
+ <div class="question">Q${index+1}. ${q.q}</div>
+
+ <div class="options">
+ ${q.options.map((o,i)=>{
+   let cls="";
+   if(reviewMode){
+     if(i===q.answer) cls="correct";
+     else if(answers[index]===i) cls="wrong";
+   } else if(answers[index]===i) cls="selected";
+   return `<button class="option ${cls}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+ }).join("")}
+ </div>
+
+ <div class="footer">
+  <button class="btn gray" onclick="prev()">Prev</button>
+  ${reviewMode?`<button class="btn back-btn" onclick="backToAnalysis()">Back</button>`:`<button class="btn gray" onclick="mark()">Mark</button>`}
+  <button class="btn dark" onclick="next()">${index+1===25?"Submit":"Next"}</button>
+ </div>`;
+}
+
+function selectOpt(i){answers[index]=i;render();}
+function prev(){if(index>0)index--;render();}
+function next(){if(index<24)index++;else submitted=true;render();}
+function mark(){reviewed[index]=!reviewed[index];render();}
+function jump(i){index=i;render();}
+
+function renderResult(){
+ clearInterval(timer);
+ let a=0,c=0,w=0,m=0;
+ QUESTIONS.forEach((q,i)=>{
+  if(answers[i]!=null){
+   a++;
+   if(answers[i]===q.answer){c++;m+=MARKS_CORRECT;}
+   else{w++;m+=MARKS_WRONG;}
+  }
+ });
+ let pct=Math.round((m/50)*100);
+ let remark=pct>=80?"Excellent":pct>=60?"Good":pct>=40?"Average":"Needs Practice";
+
+ app.innerHTML=`
+ <div class="result">
+  <h2>Overall Performance</h2>
+  <div class="card">
+   <div>Total: 25</div>
+   <div>Attempted: ${a}</div>
+   <div>Correct: ${c}</div>
+   <div>Wrong: ${w}</div>
+   <div>Marks: ${m}/50</div>
+   <div>Remark: ${remark}</div>
+  </div>
+
+  <h3>Question-wise Analysis</h3>
+  ${QUESTIONS.map((q,i)=>{
+   let ua=answers[i];
+   let pill=ua==null?"gray":ua===q.answer?"green":"red";
+   return `<div class="qa">
+    <b>Q${i+1}.</b> ${q.q}<br><br>
+    <span class="pill ${pill}">Your: ${ua==null?"Skipped":String.fromCharCode(65+ua)}</span>
+    <span class="pill green">Correct: ${String.fromCharCode(65+q.answer)}</span>
+    <button class="review-btn" onclick="reviewQuestion(${i})">Review Q</button>
+   </div>`;
+  }).join("")}
+
+  <button class="restart" onclick="location.reload()">Retake Section</button>
+ </div>`;
+}
+
+function reviewQuestion(i){index=i;reviewMode=true;render();}
+function backToAnalysis(){reviewMode=false;renderResult();}
+
+startTimer();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHSL Maths Sectional Mock (25Q)</title>
+
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:14px}
+.container{max-width:520px;width:100%;background:#fff;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08);padding:18px}
+
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.title{font-size:17px;font-weight:600}
+.timer{background:#111827;color:#fff;padding:5px 12px;border-radius:999px;font-size:13px}
+
+.sub{font-size:12px;color:#6b7280;margin-bottom:8px;display:flex;justify-content:space-between}
+.badge{background:#e5e7eb;border-radius:999px;padding:2px 8px}
+
+.q-strip{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.q-strip::-webkit-scrollbar{display:none}
+.qchip{min-width:26px;height:26px;border-radius:50%;border:1px solid #d1d5db;font-size:11px;background:#f9fafb}
+.qchip.current{background:#111827;color:#fff}
+.qchip.answered{background:#dbeafe;color:#1d4ed8}
+.qchip.reviewed{background:rebeccapurple;color:#fff}
+
+.question{font-size:15px;margin-bottom:10px;white-space:pre-line}
+.options{display:grid;gap:8px}
+.option{border:1px solid #d1d5db;border-radius:999px;padding:9px 14px;text-align:left;font-size:14px;background:#fff}
+.option.selected{background:#2563eb;color:#fff}
+.option.correct{background:#dcfce7;color:#166534}
+.option.wrong{background:#fee2e2;color:#b91c1c}
+
+.footer{margin-top:14px;display:flex;gap:6px}
+.btn{border:none;border-radius:999px;padding:9px 12px;font-size:13px}
+.btn.gray{background:#e5e7eb}
+.btn.dark{background:#111827;color:#fff;flex:1}
+.back-btn{background:#6b7280;color:#fff}
+
+.result h2{text-align:center}
+.card{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:8px}
+.qa{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:6px}
+.pill{border-radius:999px;padding:3px 8px;font-size:12px}
+.green{background:#dcfce7}
+.red{background:#fee2e2}
+.gray{background:#e5e7eb}
+
+.review-btn{margin-left:auto;background:#111827;color:#fff;border:none;border-radius:999px;padding:5px 10px;font-size:12px}
+.restart{width:100%;margin-top:10px;padding:10px;border:none;border-radius:999px;background:#2563eb;color:#fff}
+</style>
+</head>
+
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const TOTAL_TIME = 25*60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+
+/* ===== EXACT QUESTIONS AS PROVIDED ===== */
+const QUESTIONS = [
+{
+q:`A, B and C enter into a partnership. A invests Rs. 80,000, B invests Rs. 60,000, and C invests Rs. 40,000. After 6 months, B increases his capital by 25%, while C decreases his capital by 10%. At the end of 1 year, the total profit is Rs. 1,20,000. What is C’s share in the profit?`,
+options:["Rs. 20,000","Rs. 24,582","Rs. 30,000","Rs. 35,789"],
+answer:1
+},
+{
+q:`If sin A = 7/25 and cos B = 24/25, find sin A cos B + cos A sin B.`,
+options:["168/625","13/25","336/625","24/25"],
+answer:2
+},
+{
+q:`A trader buys 50 kg of rice at Rs. 50 per kg and 30 kg of a different variety at Rs. 60 per kg. He mixes the two varieties and sells the entire mixture at Rs. 55 per kg. What is his total profit or loss?`,
+options:["Rs. 100 profit","Rs. 100 loss","Rs. 200 profit","Rs. 200 loss"],
+answer:0
+},
+{
+q:`Two numbers are respectively 20% less and 30% more than a third number. What is the ratio of the two numbers?`,
+options:["8 : 13","2 : 3","4 : 5","7 : 9"],
+answer:0
+},
+{
+q:`The average of 8 numbers is 45. If each of the first 4 numbers is increased by 5 and each of the last 4 numbers is decreased by 3, what will be the new average?`,
+options:["45","47","46","48"],
+answer:2
+},
+{
+q:`The HCF of 2^4 × 3^2 × 5^3 × 7 and 2^3 × 5 × 7 × 11 is:`,
+options:["23","5","7","35"],
+answer:3
+},
+{
+q:`The population of a town increases by 20% in the first year, decreases by 10% in the second year, and again increases by 25% in the third year. If the population at the beginning was 40,000, what will be the population after 3 years?`,
+options:["24,000","43,200","48,000","54,000"],
+answer:3
+},
+{
+q:`A thief escapes from a bank at 10:00 AM at a speed of 20 km/h. A police car starts chasing him at 10:30 AM at a speed of 30 km/h. At what time will the police catch the thief?`,
+options:["11:00 AM","11:30 AM","12:00 PM","12:30 PM"],
+answer:1
+},
+{
+q:`A can do a work in 15 days, B in 30 days. They start together but A leaves after 5 days. In how many more days will B complete the remaining work?`,
+options:["15 days","6 days","7 days","8 days"],
+answer:0
+},
+{
+q:`Which of the following is in ascending order?`,
+options:[
+"1/2, 0.55, 3/5, 0.625",
+"1/2, 3/5, 0.55, 0.625",
+"0.55, 1/2, 0.625, 3/5",
+"1/2, 0.55, 0.625, 3/5"
+],
+answer:0
+},
+{
+q:`The area of a circle is 144π cm². What is the length of the circumference of the circle?`,
+options:["82.5 cm","19.8 cm","22.5 cm","75.4 cm"],
+answer:3
+},
+{
+q:`If 27^3 ÷ 3^5 = 3^n, find n.`,
+options:["3","5","6","4"],
+answer:3
+},
+{
+q:`If x − y = 8 and x y = 5, what is the value of x^3 − y^3 + 8(x + y)^2?`,
+options:["1256","1304","3456","3245"],
+answer:1
+},
+{
+q:`Simplify
+(sin x + cos x)^2 / (1 + sin x cos x)`,
+options:[
+"(6 + 5 sin x cos x) / (1 + sin x cos x)",
+"(7 + 8 sin x cos x) / (3 − sin x cos x)",
+"(9 + 2 sin x cos x) / (7 + sin x cos x)",
+"(1 + 2 sin x cos x) / (1 + sin x cos x)"
+],
+answer:3
+},
+{
+q:`If sin A = 5/13, find tan A.`,
+options:["7/13","5/12","8/15","9/13"],
+answer:1
+},
+{
+q:`In a right triangle ABC, right-angled at B, if tan A = 1/√3, what is the value of 2 sin A cos A?`,
+options:["√3/2","√3/3","√3/5","√3/8"],
+answer:0
+},
+{
+q:`The equation of a line is 5x − 2y = 10. What is the slope of a line perpendicular to this line?`,
+options:["−8","−2/5","6/7","5/2"],
+answer:1
+},
+{
+q:`Which of the following numbers can possibly be a perfect square?`,
+options:["245982","496838","178343","571536"],
+answer:3
+},
+{
+q:`A shopkeeper mixes 4 litres of milk containing 25% fat with 6 litres of milk containing 40% fat. What is the fat percentage in the final mixture?`,
+options:["30%","32%","34%","35%"],
+answer:2
+},
+{
+q:`If the radius of a sphere is increased by 20%, by what percentage will its volume increase?`,
+options:["76.6%","60.5%","72.8%","78.4%"],
+answer:2
+},
+{
+q:`The total surface area of a solid hemisphere is 300π cm². Find its volume.`,
+options:["500π cm³","125π cm³","333π/2 cm³","2000π/3 cm³"],
+answer:3
+},
+{
+q:`A jeweller marks a necklace at 30% above its cost price. He gives a cash discount of Rs. 150 on the marked price. If the necklace is sold for Rs. 1800 and there is a profit of 20%, what is the cost price of the necklace?`,
+options:["Rs. 1500","Rs. 1200","Rs. 1450","Rs. 1600"],
+answer:0
+},
+{
+q:`A sum of money doubles itself in 8 years at a certain rate of simple interest. In how many years will it become five times itself at the same rate?`,
+options:["16 years","24 years","32 years","40 years"],
+answer:2
+},
+{
+q:`Rohan invests a portion of a total sum of ₹P in Scheme A for 4 years and the remaining amount in Scheme B for 5 years. Scheme A offers a simple interest rate of r% per annum, while Scheme B offers a simple interest rate of (r + 2)% per annum. The amount invested in Scheme A is 50% more than the amount invested in Scheme B. If the simple interest from Scheme A is ₹1,920 and the amount invested in Scheme B is ₹2,400, what is the simple interest rate (r)?`,
+options:["10%","15%","5%","12%"],
+answer:0
+},
+{
+q:`What is the value of a^2 + b^2 + c^2 if a + b + c = 12 and ab + bc + ca = 40?`,
+options:["84","64","44","144"],
+answer:1
+}
+];
+
+/* ===== REMAINING SCRIPT UNCHANGED ===== */
+
+let index=0,answers=new Array(25).fill(null),
+reviewed=new Array(25).fill(false),
+timeLeft=TOTAL_TIME,submitted=false,reviewMode=false,timer,stripScroll=0;
+
+const app=document.getElementById("app");
+
+function startTimer(){
+ timer=setInterval(()=>{
+  if(!submitted && !reviewMode){
+   timeLeft--;
+   if(timeLeft<=0){submitted=true;renderResult();}
+   render();
+  }
+ },1000);
+}
+
+function render(){
+ if(submitted && !reviewMode){renderResult();return;}
+ const old=document.querySelector(".q-strip");
+ if(old) stripScroll=old.scrollLeft;
+
+ const q=QUESTIONS[index];
+ app.innerHTML=`
+ <div class="header">
+  <div class="title">Maths Sectional Mock</div>
+  <div class="timer">⏱ ${Math.floor(timeLeft/60)}:${String(timeLeft%60).padStart(2,"0")}</div>
+ </div>
+
+ <div class="sub">
+  <span>+2 / −0.5</span>
+  <span class="badge">Mathematics</span>
+ </div>
+
+ <div class="q-strip">
+ ${QUESTIONS.map((_,i)=>`<button class="qchip ${i===index?"current":""} ${answers[i]!=null?"answered":""} ${reviewed[i]?"reviewed":""}" onclick="jump(${i})">${i+1}</button>`).join("")}
+ </div>
+
+ <div class="question">Q${index+1}. ${q.q}</div>
+
+ <div class="options">
+ ${q.options.map((o,i)=>{
+   let cls="";
+   if(reviewMode){
+     if(i===q.answer) cls="correct";
+     else if(answers[index]===i) cls="wrong";
+   } else if(answers[index]===i) cls="selected";
+   return `<button class="option ${cls}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+ }).join("")}
+ </div>
+
+ <div class="footer">
+  <button class="btn gray" onclick="prev()">Prev</button>
+  ${reviewMode?`<button class="btn back-btn" onclick="backToAnalysis()">Back</button>`:`<button class="btn gray" onclick="mark()">Mark</button>`}
+  <button class="btn dark" onclick="next()">${index+1===25?"Submit":"Next"}</button>
+ </div>`;
+
+ const nw=document.querySelector(".q-strip");
+ if(nw) nw.scrollLeft=stripScroll;
+}
+
+function selectOpt(i){answers[index]=i;render();}
+function prev(){if(index>0)index--;render();}
+function next(){if(index<24)index++;else submitted=true;render();}
+function mark(){reviewed[index]=!reviewed[index];render();}
+function jump(i){index=i;render();}
+
+function renderResult(){
+ clearInterval(timer);
+ let a=0,c=0,w=0,m=0;
+ QUESTIONS.forEach((q,i)=>{
+  if(answers[i]!=null){
+   a++;
+   if(answers[i]===q.answer){c++;m+=MARKS_CORRECT;}
+   else{w++;m+=MARKS_WRONG;}
+  }
+ });
+ let pct=Math.round((m/50)*100);
+ let remark=pct>=80?"Excellent":pct>=60?"Good":pct>=40?"Average":"Needs Practice";
+
+ app.innerHTML=`
+ <div class="result">
+  <h2>Overall Performance</h2>
+  <div class="card">
+   <div>Total: 25</div>
+   <div>Attempted: ${a}</div>
+   <div>Correct: ${c}</div>
+   <div>Wrong: ${w}</div>
+   <div>Marks: ${m}/50</div>
+   <div>Remark: ${remark}</div>
+  </div>
+
+  <h3>Question-wise Analysis</h3>
+  ${QUESTIONS.map((q,i)=>{
+   let ua=answers[i];
+   let pill=ua==null?"gray":ua===q.answer?"green":"red";
+   return `<div class="qa">
+    <b>Q${i+1}.</b> ${q.q}<br><br>
+    <span class="pill ${pill}">Your: ${ua==null?"Skipped":String.fromCharCode(65+ua)}</span>
+    <span class="pill green">Correct: ${String.fromCharCode(65+q.answer)}</span>
+    <button class="review-btn" onclick="reviewQuestion(${i})">Review Q</button>
+   </div>`;
+  }).join("")}
+
+  <button class="restart" onclick="location.reload()">Retake Section</button>
+ </div>`;
+}
+
+function reviewQuestion(i){index=i;reviewMode=true;render();}
+function backToAnalysis(){reviewMode=false;renderResult();}
+
+startTimer();
+render();
+</script>
+</body>
+</html>

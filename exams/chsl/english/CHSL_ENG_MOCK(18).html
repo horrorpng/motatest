@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>English Sectional Mock</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#f3f4f6;display:flex;justify-content:center;padding:16px}
+    .container{max-width:520px;width:100%;background:#fff;margin-top:24px;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    .title{font-size:18px;font-weight:600}
+    .timer-wrap{display:flex;align-items:center;gap:6px}
+    .timer{padding:4px 10px;border-radius:999px;background:#111827;color:#fff;font-size:13px}
+    .pause-btn{border-radius:999px;border:1px solid #d1d5db;padding:4px 10px;font-size:12px;background:#f9fafb;cursor:pointer}
+    .subheader{font-size:12px;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e5e7eb;font-size:11px;color:#374151}
+    .progress-bar-bg{width:100%;height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:8px}
+    .progress-bar-fill{height:100%;width:0%;background:#3b82f6;transition:width .2s}
+    .q-strip{margin-bottom:10px;overflow-x:auto;padding:4px 0}
+    .q-strip-inner{display:flex;gap:4px;padding-bottom:2px}
+    .qchip{min-width:26px;height:26px;border-radius:999px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .qchip.answered{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+    .qchip.current{background:#111827;border-color:#111827;color:#fff}
+    .qchip.reviewed{background:rebeccapurple!important;color:#fff!important;border-color:rebeccapurple!important}
+    .section-tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-bottom:6px}
+    .question-text{font-size:15px;margin-bottom:10px;white-space:pre-line}
+    .options{display:grid;gap:8px}
+    .option-btn{width:100%;border-radius:999px;padding:9px 14px;border:1px solid #d1d5db;background:#fff;text-align:left;font-size:14px;cursor:pointer}
+    .option-btn.selected{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    .option-btn.correct{background:#dcfce7;color:#166534;border-color:#16a34a}
+    .option-btn.wrong{background:#fee2e2;color:#b91c1c;border-color:#ef4444}
+    .footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .nav-buttons{display:flex;gap:6px;flex:1}
+    .nav-btn,.next-btn{border-radius:999px;padding:9px 12px;border:none;font-size:13px;cursor:pointer}
+    .nav-btn{background:#e5e7eb}
+    .next-btn{flex:1;background:#111827;color:#fff}
+    .result h2{text-align:center}
+  </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+/* English Sectional Mock – 13 Minutes */
+const TOTAL_TIME = 13 * 60;
+const MARKS_CORRECT = 2;
+const MARKS_WRONG = -0.5;
+const QUESTIONS = [
+{
+  q: "Choose the correct option to give a one-word substitution for the sentence given.\nKilling of an unborn baby.",
+  options: ["Homicide","Paternity","Maternity","Foeticide"],
+  answer: 3
+},
+{
+  q: "Select the alternative which best expresses the meaning of the idiom/phrase.\nLook before you leap",
+  options: [
+    "Hide something",
+    "Analyze the consequences before making a decision",
+    "Depending on others for task completion",
+    "Always be humble to people of lower designation"
+  ],
+  answer: 1
+},
+{
+  q: "Choose the option that has an error in the sentence.\nI’m lucky that I have been doing a job I enjoy, all my working life.",
+  options: [
+    "I’m lucky that",
+    "I have been doing a job",
+    "I enjoy all my working life",
+    "No correction required"
+  ],
+  answer: 2
+},
+{
+  q: "Identify the part of the sentence that contains an error.\n“No sooner had she left the room when the lights went out.”",
+  options: [
+    "No sooner",
+    "had she left",
+    "the room when",
+    "the lights went out"
+  ],
+  answer: 2
+},
+{
+  q: "Fill in the blank with the most appropriate preposition.\nThe manager was taken aback ___ the sudden resignation of three key employees.",
+  options: ["by","at","for","over"],
+  answer: 0
+},
+{
+  q: "Choose the correct word to complete the sentence.\nThey built a ___ to cross the river.",
+  options: ["bred","bread","bridge","bridge"],
+  answer: 3
+},
+{
+  q: "Choose the correctly spelt word.",
+  options: ["Sacrilegious","Sacriligeous","Sacrilegious","Secrilegious"],
+  answer: 2
+},
+{
+  q: "Choose the best option to replace the underlined part to improve the sentence.\nThe plane flew on the city, offering a great view.",
+  options: ["over the city","in the city","at the city","No substitution"],
+  answer: 0
+},
+{
+  q: "Choose the best option to replace the underlined part to improve the sentence.\nThe company has done away for unnecessary paperwork by going completely digital.",
+  options: ["Done away with","Done off","Done in for","No substitution"],
+  answer: 0
+},
+{
+  q: "From the alternatives given below, select the correct passive voice of the sentence.\nThe students were imitating the way of the description by the teacher.",
+  options: [
+    "The way of the description by the teacher was imitated by the students.",
+    "The way of the description by the teacher were being imitated by the students.",
+    "The way of the description by the teacher had been imitated by the students.",
+    "The way of the description by the teacher was being imitated by the students."
+  ],
+  answer: 3
+},
+{
+  q: "Choose the option that is the most appropriate conversion of the sentence into Active Voice.\nAll the arrangements had been made by the organizers before we arrived.",
+  options: [
+    "The organizers made all the arrangements before we arrived.",
+    "The organizers will have made all the arrangements before we arrive.",
+    "The organizers had made all the arrangements before we arrived.",
+    "The organizers have made all the arrangements before we arrived."
+  ],
+  answer: 2
+},
+{
+  q: "Choose the correct indirect narration.\nSnigdha said, “What a beautiful day today is!”",
+  options: [
+    "Snigdha exclaimed that day has been a very beautiful day.",
+    "Snigdha exclaimed that day a very beautiful day was.",
+    "Snigdha exclaimed that day was a very beautiful day.",
+    "Snigdha exclaimed that that day was a very beautiful day."
+  ],
+  answer: 3
+},
+{
+  q: "Choose the option that is the most appropriate conversion of the sentence into Direct Speech.\nThey asked if I knew the way to the museum.",
+  options: [
+    "They asked, “Do you know the way to the museum?”",
+    "They asked, “Did you know the way to the museum?”",
+    "They ask, “If I know the way to the museum?”",
+    "They said, “Did you know the way to the museum?”"
+  ],
+  answer: 0
+},
+{
+  q: "The following sentence has two blanks. Choose the most suitable set of prepositions.\nHis fascination ___ mythology grew ___ exposure to ancient texts.",
+  options: ["of, by","with, through","for, from","at, under"],
+  answer: 2
+},
+{
+  q: "Choose the most appropriate conversion into Direct Speech.\nHe said that by the time she arrived, the guests had already started leaving.",
+  options: [
+    "He said, “By the time she has arrived, the guests were already leaving.”",
+    "He said, “By the time she had arrived, the guests had already started leaving.”",
+    "He said, “By the time she arrived, the guests had already started leaving.”",
+    "He said, “By the time she arrived, the guests had already started to leave.”"
+  ],
+  answer: 2
+},
+{
+  q: "Change the following sentence into the Active form.\nIt was widely considered that the ancient ruins were believed to have been constructed by a previously unknown civilization.",
+  options: [
+    "It was widely considered that a previously unknown civilization believed to have constructed the ancient ruins.",
+    "People widely considered that a previously unknown civilization was believed to have constructed the ancient ruins.",
+    "People widely considered that a previously unknown civilization had constructed the ancient ruins.",
+    "It was believed that a previously unknown civilization had constructed the ancient ruins, it was widely considered."
+  ],
+  answer: 2
+},
+{
+  q: "One of these words is spelt incorrectly. Which one is it?",
+  options: ["Acknowledgment","Proficiency","Perseverance","Reputable"],
+  answer: 3
+},
+{
+  q: "Choose the correct passive voice transformation of the sentence.\nBob was drawing the portrait.",
+  options: [
+    "The portrait is being drawn by Bob.",
+    "The portrait was being drawn by Bob.",
+    "The portrait has been drawn by Bob.",
+    "The portrait was drawn by Bob."
+  ],
+  answer: 1
+},
+{
+  q: "PASSAGE (For Q19–Q23)\n\nJapan is often admired around the world for its high level of discipline and social order. From childhood, Japanese people are taught to respect rules, value punctuality, and prioritise community welfare over individual interests. This cultural emphasis on discipline has played a major role in Japan’s remarkable progress and social harmony.\n\nOne can see examples of discipline in everyday life: people stand in neat lines at stations, streets are clean despite a lack of dustbins, and public spaces are rarely damaged. The Japanese education system also strongly focuses on moral training, teamwork, and responsibility. Such habits help develop a sense of collective responsibility among citizens.\n\nDuring times of crisis, such as natural disasters, the discipline of Japanese people becomes even more evident. They remain calm, organised, and cooperative, which makes recovery faster and more effective. This cultural value has not only strengthened their society internally but has also earned Japan a reputation for efficiency and respect on the global stage.\n\nWhat is the part of speech of the word “punctuality”?",
+  options: ["Verb","Adjective","Noun","Adverb"],
+  answer: 2
+},
+{
+  q: "Why is the verb “focuses” used instead of “focus”?",
+  options: [
+    "Because “training” is the object",
+    "Because “system” is a singular subject",
+    "Because “education” is uncountable",
+    "Because the sentence is in passive voice"
+  ],
+  answer: 1
+},
+{
+  q: "What is the closest synonym of the word “efficiency”?",
+  options: ["Freedom","Effectiveness","Popularity","Ambition"],
+  answer: 1
+},
+{
+  q: "What does the word “emphasis” most nearly mean?",
+  options: [
+    "Opposition",
+    "Rejection",
+    "Special importance or attention",
+    "Lack of interest"
+  ],
+  answer: 2
+},
+{
+  q: "What is the main idea of the passage?",
+  options: [
+    "Japanese people dislike rules",
+    "Discipline is deeply rooted in Japanese culture and benefits society",
+    "Japan struggles to maintain cleanliness",
+    "Japan does not value teamwork"
+  ],
+  answer: 1
+},
+{
+  q: "What is the antonym of “Surreptitious”?",
+  options: ["Covert","Furtive","Overt","Stealthy"],
+  answer: 2
+},
+{
+  q: "What is the antonym of “Noisome”?",
+  options: ["Fragrant","Rancid","Putrid","Malodorous"],
+  answer: 0
+}
+];
+// State    
+let currentIndex = 0;    
+let answers = new Array(QUESTIONS.length).fill(null);     
+let reviewed = new Array(QUESTIONS.length).fill(false); // mark-for-review flags    
+let timeLeft = TOTAL_TIME;    
+let timerId = null;    
+let submitted = false;    
+let isPaused = false;    
+let reviewMode = false; // true when user is viewing a single question from analysis    
+const app = document.getElementById("app");    
+
+function formatTime(sec){ 
+  const m = Math.floor(sec/60), s = sec%60; 
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"00")}`; 
+}    
+
+function getStats(){    
+  const s = { total: QUESTIONS.length, attempted:0, correct:0, wrong:0, marks:0 };    
+  QUESTIONS.forEach((q,i)=>{    
+    const a = answers[i];    
+    if (a !== null){    
+      s.attempted++;    
+      if (a === q.answer){ s.correct++; s.marks += MARKS_CORRECT; }    
+      else { s.wrong++; s.marks += MARKS_WRONG; }    
+    }    
+  });    
+  return s;    
+}    
+
+function renderQuestion(){    
+  if (reviewMode) isPaused = true;    
+  if (submitted && !reviewMode){ renderResult(); return; }    
+
+  const q = QUESTIONS[currentIndex];    
+  const progressPercent = ((currentIndex+1)/QUESTIONS.length)*100;    
+  const selected = answers[currentIndex];    
+
+  const stripHtml = QUESTIONS.map((_,idx)=>{    
+    let cls = "qchip";    
+    if (idx===currentIndex) cls += " current";    
+    if (answers[idx] !== null) cls += " answered";    
+    if (reviewed[idx]) cls += " reviewed";    
+    return `<button class="${cls}" data-q="${idx}">${idx+1}</button>`;    
+  }).join("");    
+
+  app.innerHTML = `    
+    <div class="header">    
+      <div class="title">English Sectional Mock</div>    
+      <div class="timer-wrap">    
+        <div class="timer">⏱ ${formatTime(timeLeft)}</div>    
+        <button class="pause-btn" id="pauseBtn">${isPaused ? "Resume":"Pause"}</button>    
+      </div>    
+    </div>    
+
+    <div class="subheader">    
+      <span>+${MARKS_CORRECT} for correct, ${MARKS_WRONG} for wrong</span>    
+      <span class="badge">English</span>    
+    </div>    
+
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width:${progressPercent}%"></div>
+    </div>    
+
+    <div class="q-strip">
+      <div class="q-strip-inner">${stripHtml}</div>
+    </div>    
+
+    <div class="section-tag">English</div>    
+
+    <div class="question-text">Q${currentIndex+1}. ${q.q}</div>    
+
+    <div class="options">    
+      ${q.options.map((opt,idx)=>{    
+        let classes = "";    
+        if (selected === idx && !reviewMode) classes = "selected";    
+        if (reviewMode){    
+          if (idx === q.answer) classes = "correct";    
+          else if (selected === idx && selected !== q.answer) classes = "wrong";    
+        } else {    
+          if (selected === idx) classes = "selected";    
+        }    
+        return `<button class="option-btn ${classes}" data-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`;    
+      }).join("")}    
+    </div>    
+
+    <div class="footer">    
+      <div class="question-count">Question ${currentIndex+1} of ${QUESTIONS.length}</div>    
+      <div class="nav-buttons">    
+        <button class="nav-btn" id="prevBtn"${currentIndex===0 ? " disabled":""}>Prev</button>    
+        ${ reviewMode ? `<button class="back-btn" id="backAnalysis">Back to Analysis</button>` : "" }    
+        <button class="nav-btn" id="markBtn">Mark</button>    
+        <button class="next-btn" id="nextBtn">${currentIndex+1===QUESTIONS.length? "Submit":"Next"}</button>    
+      </div>    
+    </div>    
+  `;    
+
+  document.getElementById("pauseBtn").addEventListener("click", ()=>{    
+    if (reviewMode){ isPaused = true; renderQuestion(); return; }    
+    isPaused = !isPaused;    
+    renderQuestion();    
+  });    
+
+  document.querySelectorAll(".qchip").forEach(b=>{    
+    b.addEventListener("click", ()=>{ 
+      currentIndex = Number(b.dataset.q); 
+      reviewMode = false; 
+      renderQuestion(); 
+    });    
+  });    
+
+  document.querySelectorAll(".option-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.index);    
+      if (reviewMode) return;    
+      answers[currentIndex] = idx;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{    
+    if (currentIndex>0){ currentIndex--; reviewMode = false; renderQuestion(); }    
+  });    
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{    
+    if (currentIndex+1 < QUESTIONS.length){ currentIndex++; reviewMode = false; renderQuestion(); }    
+    else { submitted = true; reviewMode = false; renderResult(); }    
+  });    
+
+  const markBtnEl = document.getElementById('markBtn');    
+  if (markBtnEl){    
+    markBtnEl.addEventListener('click', ()=>{    
+      reviewed[currentIndex] = !reviewed[currentIndex];    
+      markBtnEl.textContent = reviewed[currentIndex] ? 'Marked' : 'Mark';    
+      renderQuestion();    
+    });    
+  }    
+
+  const back = document.getElementById("backAnalysis");    
+  if (back){    
+    back.addEventListener("click", ()=>{    
+      reviewMode = false;    
+      submitted = true;    
+      renderResult();    
+    });    
+  }    
+}    
+
+function renderResult(){    
+  if (timerId){ clearInterval(timerId); timerId = null; }    
+  const s = getStats();    
+  const maxMarks = s.total * MARKS_CORRECT;    
+  const percentage = maxMarks>0 ? Math.round((s.marks/maxMarks)*100):0;    
+  let remark = percentage>=80 ? "Excellent! 💯"
+             : percentage>=60 ? "Good! 👍"
+             : percentage>=40 ? "Average. Can improve 🙂"
+             : "Needs more practice 💪";    
+
+  let qaHtml = "";    
+  QUESTIONS.forEach((q,i)=>{    
+    const user = answers[i];    
+    const correctIdx = q.answer;    
+    const isSkipped = user === null;    
+    const isCorrect = !isSkipped && user === correctIdx;    
+    const pill = isSkipped ? `<span class="pill-gray">Skipped</span>` 
+               : isCorrect ? `<span class="pill-green">Correct</span>` 
+               : `<span class="pill-red">Wrong</span>`;    
+
+    const userText = isSkipped ? "<em>Skipped</em>" : `${String.fromCharCode(65+user)}. ${q.options[user]}`;    
+    const correctText = `${String.fromCharCode(65+correctIdx)}. ${q.options[correctIdx]}`;    
+
+    qaHtml += `    
+      <div class="qa-card" id="qa-${i}">    
+        <div class="qa-question"><strong>Q${i+1}.</strong> ${q.q}</div>    
+        <div class="qa-answer-row">    
+          <div><span class="label">Your answer:</span> ${userText}</div>    
+          <div><span class="label">Correct answer:</span> ${correctText}</div>    
+          <div style="margin-left:auto">${pill}</div>    
+        </div>    
+        <div style="margin-top:8px;text-align:right">    
+          <button class="review-btn" data-q="${i}">Review Q</button>    
+        </div>    
+      </div>    
+    `;    
+  });    
+
+  app.innerHTML = `    
+    <div class="result">    
+      <h2>English Section Analysis</h2>    
+      <div class="tiny">9-minute sectional mock completed</div>    
+
+      <div class="card">    
+        <div class="card-title">Overall Performance</div>    
+        <div class="stat-row"><span>Total Questions</span><span>${s.total}</span></div>    
+        <div class="stat-row"><span>Attempted</span><span>${s.attempted}</span></div>    
+        <div class="stat-row"><span>Correct</span><span>${s.correct}</span></div>    
+        <div class="stat-row"><span>Wrong</span><span>${s.wrong}</span></div>    
+        <div class="stat-row"><span>Marks</span><span>${s.marks.toFixed(2)} / ${maxMarks}</span></div>    
+        <div class="stat-row"><span>Percentage</span><span>${percentage}%</span></div>    
+        <div class="stat-row"><span>Remark</span><span>${remark}</span></div>    
+      </div>    
+
+      <div style="margin-top:8px;margin-bottom:8px">    
+        <div class="card-title">Question-wise Review</div>    
+        ${qaHtml}    
+      </div>    
+
+      <button class="restart-btn" id="restartBtn">Retake Section</button>    
+      <div class="tiny">Timer will restart from 9 minutes</div>    
+    </div>    
+  `;    
+
+  document.querySelectorAll(".review-btn").forEach(b=>{    
+    b.addEventListener("click", ()=>{    
+      const idx = Number(b.dataset.q);    
+      currentIndex = idx;    
+      reviewMode = true;    
+      submitted = false;    
+      isPaused = true;    
+      renderQuestion();    
+    });    
+  });    
+
+  document.getElementById("restartBtn").addEventListener("click", ()=>{    
+    currentIndex = 0;    
+    answers = new Array(QUESTIONS.length).fill(null);    
+    timeLeft = TOTAL_TIME;    
+    submitted = false;    
+    isPaused = false;    
+    reviewMode = false;    
+    startTimer();    
+    renderQuestion();    
+  });    
+}    
+
+function startTimer(){    
+  if (timerId) clearInterval(timerId);    
+  timerId = setInterval(()=>{    
+    if (!isPaused && !submitted && !reviewMode){    
+      timeLeft--;    
+      if (timeLeft <= 0){    
+        submitted = true;    
+        reviewMode = false;    
+        renderResult();    
+        return;    
+      }    
+    }    
+    const el = document.querySelector(".timer");    
+    if (el) el.textContent = "⏱ " + formatTime(timeLeft);    
+  }, 1000);    
+}    
+
+startTimer();    
+renderQuestion();
+</script>  </body>    </html>
